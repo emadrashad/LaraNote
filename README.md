@@ -20,7 +20,7 @@ LaraNote is a small browser extension that lets you highlight text on any webpag
 
 1. Open your browser's extensions page (e.g. `chrome://extensions` for Chrome/Edge).
 2. Enable "Developer mode".
-3. Click "Load unpacked" and select the `laranote` folder.
+3. Click "Load unpacked" and select the `LaraNote` folder.
 4. The extension should appear in the toolbar.
 
 ## How to use
