@@ -1,0 +1,111 @@
+
+.yh-highlight{background:#ffec80;padding:0 0.05em;border-radius:2px}
+.yh-toolbar{position:absolute;z-index:2147483647;display:flex;gap:6px;align-items:center;background:#111827;color:#fff;border:1px solid #374151;border-radius:10px;padding:6px 8px;box-shadow:0 6px 18px rgba(0,0,0,.26);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans","Apple Color Emoji";font-size:12px;user-select:none}
+.yh-toolbar button{all:unset;padding:4px 8px;border-radius:8px;cursor:pointer;background:#1f2937;border:1px solid #374151}
+.yh-toolbar button:hover{background:#374151}
+.yh-toolbar-sep{width:1px;height:16px;background:#374151}
+.yh-note-pop{position:absolute;max-width:280px;background:#111827;color:#fff;border:1px solid #374151;border-radius:10px;padding:8px 10px;box-shadow:0 6px 18px rgba(0,0,0,.26);font-size:12px;z-index:2147483647}
+.yh-note-pop textarea{width:260px;min-height:80px;background:#0b1220;color:#fff;border-radius:8px;border:1px solid #374151;padding:8px;resize:vertical}
+.yh-note-list{margin-top:6px;border-top:1px dashed #374151;padding-top:6px;max-height:220px;overflow:auto}
+.yh-note-item{background:#0b1220;border:1px solid #1f2937;padding:6px;border-radius:6px;margin-bottom:6px}
+.yh-note-item small{color:#9ca3af}
+.yh-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;background:#0b1220;color:#93c5fd;border:1px solid #1f2937;padding:2px 6px;border-radius:999px}
+.yh-note-pin{display:inline-block;margin-left:4px;font-size:12px;color:#3b82f6}
+.yh-brand{display:inline-flex;align-items:center;gap:6px;margin-inline-end:8px;border-inline-end:1px solid #374151;padding-inline-end:8px}
+.yh-brand img{width:18px;height:18px;object-fit:contain;border-radius:4px;background:white}
+
+/* === Laranote v3.8 highlight improvements === */
+/* Default (light backgrounds): readable yellow chip */
+.yh-highlight{
+  background: #facc15 !important;
+  color: #111827 !important;
+  padding: 0 2px;
+  border-radius: 3px;
+  box-decoration-break: clone;
+}
+
+/* Prefer readable highlight on dark pages */
+html.ln-dark .yh-highlight{
+  background: rgba(250, 204, 21, 0.35) !important;
+  color: inherit !important;
+  outline: 1px solid rgba(250, 204, 21, 0.45);
+}
+
+/* === v3.9: Ensure note-popup buttons are visible in light & dark modes === */
+.yh-note-pop button{
+  all: unset;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #1f2937;
+  color: #fff;
+  border: 1px solid #374151;
+}
+.yh-note-pop button:hover{ background:#374151; }
+
+@media (prefers-color-scheme: light){
+  .yh-note-pop{ background:#ffffff; color:#111827; border-color:#e5e7eb; }
+  .yh-note-pop textarea{ background:#f9fafb; color:#111827; border-color:#e5e7eb; }
+  .yh-note-pop button{
+    background:#f3f4f6;
+    color:#111827;
+    border-color:#d1d5db;
+  }
+  .yh-note-pop button:hover{ background:#e5e7eb; }
+}
+
+/* === v4.1: Toolbar adapts to prefers-color-scheme (unless page is ln-dark) === */
+/* Dark is default from earlier builds */
+@media (prefers-color-scheme: light){
+  html:not(.ln-dark) .yh-toolbar{
+    background:#ffffff;
+    color:#111827;
+    border:1px solid #e5e7eb;
+    box-shadow:0 6px 18px rgba(0,0,0,.12);
+  }
+  html:not(.ln-dark) .yh-toolbar button{
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    color:#111827;
+  }
+  html:not(.ln-dark) .yh-toolbar button:hover{
+    background:#e5e7eb;
+  }
+  html:not(.ln-dark) .yh-brand img{
+    background:#facc15;
+  }
+}
+
+/* === v4.2: note popups & badge adapt to theme === */
+/* Default (dark-first) */
+.yh-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;
+  background:#0b1424;
+  color:#cfe6ff;
+  border:1px solid #20314d;
+  padding:4px 8px;border-radius:999px;
+}
+.yh-note-item{background:#0b1220;border:1px solid #1f2937;color:#e5e7eb;border-radius:8px;padding:8px}
+
+/* Respect site-level detection (ln-dark) already set earlier */
+
+/* If the browser is light AND page isn't ln-dark, invert to light UI */
+@media (prefers-color-scheme: light){
+  html:not(.ln-dark) .yh-badge{
+    background:#f3f4f6;
+    color:#111827;
+    border:1px solid #e5e7eb;
+  }
+  html:not(.ln-dark) .yh-note-pop{
+    background:#ffffff;
+    color:#111827;
+    border:1px solid #e5e7eb;
+    box-shadow:0 8px 24px rgba(0,0,0,.12);
+  }
+  html:not(.ln-dark) .yh-note-item{
+    background:#fafafa;
+    border:1px solid #e5e7eb;
+    color:#111827;
+  }
+}

@@ -1,0 +1,187 @@
+
+*{box-sizing:border-box}
+body{width:360px;min-height:420px;margin:0;font:13px system-ui,Segoe UI,Roboto,Arial;background:#0b1220;color:#e5e7eb}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #1f2937;background:#0e1628;position:sticky;top:0}
+header .logo{width:22px;height:22px;border-radius:6px;background:white}
+header .tit{font-weight:700}
+#list{padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+.card{border:1px solid #1f2937;border-radius:10px;padding:8px;background:#0e1628;cursor:pointer}
+.card:hover{background:#142037}
+.url{color:#93c5fd;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.note{font-size:13px;color:#e5e7eb}
+.meta{display:flex;justify-content:space-between;color:#9ca3af;font-size:11px;margin-top:6px}
+footer{display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #1f2937;padding:8px 10px;background:#0e1628;position:sticky;bottom:0}
+button{all:unset;background:#132036;border:1px solid #20314d;padding:6px 10px;border-radius:8px;cursor:pointer}
+button:hover{background:#1a2b45}
+.empty{color:#9ca3af;text-align:center;padding:20px}
+
+/* === Mixed RTL/LTR improvements === */
+.url{ direction:ltr; unicode-bidi: isolate; } /* URLs should always be LTR */
+.note{ unicode-bidi: plaintext; }            /* Derive base direction from content */
+[dir="rtl"] header, [dir="rtl"] footer{ direction: rtl; }
+[dir="rtl"] .card{ direction: rtl; }
+
+/* === Logo look & feel (yellow accents) === */
+:root{
+  --brand-yellow:#FACC15; /* logo-like */
+  --ink:#0b1220;
+  --panel:#0e1628;
+  --border:#1f2937;
+}
+header{background:var(--brand-yellow); color:var(--ink); border-bottom:1px solid var(--border)}
+header .tit{color:var(--ink)}
+header .logo{background:transparent}
+body{background:#0b1220}
+.card{background:var(--panel); border:1px solid var(--border)}
+button{background:#132036; border:1px solid #20314d}
+button:hover{background:#1a2b45}
+.btn-accent{background:var(--brand-yellow)!important; border-color:#d4b300!important; color:#111827!important}
+/* Pager */
+.pager{display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 10px; border-top:1px solid var(--border); background:var(--panel)}
+.pager button{padding:6px 10px}
+.pager .info{color:#9ca3af; font-size:12px}
+
+/* === v3.9: Auto-theme popup based on browser theme === */
+:root{
+  --brand-yellow:#FACC15;
+  --ink:#0b1220;
+  --panel-dark:#0e1628;
+  --panel-light:#ffffff;
+  --border-dark:#1f2937;
+  --border-light:#e5e7eb;
+  --text-dark:#e5e7eb;
+  --text-light:#111827;
+  --url-dark:#93c5fd;
+  --url-light:#1d4ed8;
+}
+
+/* Dark (default from v3.7) */
+@media (prefers-color-scheme: dark){
+  body{background:#0b1220;color:var(--text-dark)}
+  header{background:var(--brand-yellow);color:var(--ink);border-bottom:1px solid var(--border-dark)}
+  #list .card{background:var(--panel-dark);border:1px solid var(--border-dark)}
+  .url{color:var(--url-dark)}
+  button{background:#132036;border:1px solid #20314d;color:var(--text-dark)}
+  button:hover{background:#1a2b45}
+  .pager{background:var(--panel-dark);border-top:1px solid var(--border-dark)}
+}
+
+/* Light */
+@media (prefers-color-scheme: light){
+  body{background:#ffffff;color:var(--text-light)}
+  header{background:var(--brand-yellow);color:var(--ink);border-bottom:1px solid var(--border-light)}
+  #list .card{background:var(--panel-light);border:1px solid var(--border-light)}
+  .url{color:var(--url-light)}
+  .note{color:var(--text-light)}
+  .meta{color:#6b7280}
+  button{background:#f3f4f6;border:1px solid var(--border-light);color:var(--text-light)}
+  button:hover{background:#e5e7eb}
+  .pager{background:#fafafa;border-top:1px solid var(--border-light)}
+}
+
+/* v4.0 footer tweak */
+@media (prefers-color-scheme: dark){
+  footer{background:#0e1628; border-top:1px solid #1f2937}
+}
+@media (prefers-color-scheme: light){
+  footer{background:#fafafa; border-top:1px solid #e5e7eb}
+}
+
+/* v4.0 list tweak */
+@media (prefers-color-scheme: light){
+  #list{background:transparent}
+}
+
+/* === v4.4: refined footer + button hover === */
+footer{display:flex;align-items:center;justify-content:space-between;padding:10px;border-top:1px solid var(--border-light)}
+footer .foot-left{font-size:12px;opacity:.85}
+footer .foot-right{display:flex;gap:8px}
+button{transition:background-color .12s ease, transform .08s ease, box-shadow .12s ease}
+button:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+@media (prefers-color-scheme: dark){
+  footer{border-top:1px solid var(--border-dark)}
+  button:hover{box-shadow:0 2px 8px rgba(0,0,0,.35)}
+}
+
+/* === v4.5: true footer at the bottom === */
+html, body { height: 100%; }
+body{
+  display:flex;
+  flex-direction:column;
+  width:360px;
+  min-height:420px;
+}
+header{ flex: 0 0 auto; }
+#list{ flex: 1 1 auto; overflow-y:auto; }
+#pager{ flex: 0 0 auto; }
+footer{ flex: 0 0 auto; position: sticky; bottom: 0; }
+
+/* === v4.6: restore hover & footer badge === */
+.card{
+  transition: transform .12s ease, background-color .12s ease, border-color .12s ease;
+}
+button{
+  transition: background-color .12s ease, transform .08s ease, box-shadow .12s ease;
+}
+button:hover{ transform: translateY(-1px) }
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:11px;
+  line-height:18px;
+  border:1px solid;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark){
+  .card:hover{ background:#142037; border-color:#294265 }
+  button:hover{ box-shadow:0 2px 8px rgba(0,0,0,.35) }
+  .badge{ background:#0b1424; color:#cfe6ff; border-color:#20314d }
+  footer a{ color:#93c5fd; text-decoration:none }
+  footer a:hover{ text-decoration:underline }
+}
+
+/* Light theme */
+@media (prefers-color-scheme: light){
+  .card:hover{ background:#f8fafc; border-color:#d1d5db }
+  button:hover{ box-shadow:0 2px 6px rgba(0,0,0,.10) }
+  .badge{ background:#f3f4f6; color:#111827; border-color:#e5e7eb }
+  footer a{ color:#1d4ed8; text-decoration:none }
+  footer a:hover{ text-decoration:underline }
+}
+
+/* Footer layout stays sticky bottom from v4.5 */
+footer{display:flex;align-items:center;justify-content:space-between;padding:10px}
+footer .foot-left{font-size:12px;opacity:.9}
+footer .foot-right{display:flex;align-items:center;gap:8px}
+
+/* v4.7 footer polish */
+html[dir="rtl"] footer .foot-left{ order:2 }
+html[dir="rtl"] footer .foot-right{ order:1 }
+.badge{ min-width:42px; text-align:center }
+
+/* v4.10 footer love link */
+footer .foot-left a{white-space:nowrap}
+
+/* v4.11 hover restore */
+.card{ transition: transform .12s ease, background-color .12s ease, border-color .12s ease; }
+button{ transition: background-color .12s ease, transform .08s ease, box-shadow .12s ease; }
+button:hover{ transform: translateY(-1px) }
+@media (prefers-color-scheme: dark){
+  .card:hover{ background:#142037; border-color:#294265 }
+  button:hover{ box-shadow:0 2px 8px rgba(0,0,0,.35) }
+  footer a{ color:#93c5fd; text-decoration:none }
+  footer a:hover{ text-decoration:underline }
+}
+@media (prefers-color-scheme: light){
+  .card:hover{ background:#f8fafc; border-color:#d1d5db }
+  button:hover{ box-shadow:0 2px 6px rgba(0,0,0,.10) }
+  footer a{ color:#1d4ed8; text-decoration:none }
+  footer a:hover{ text-decoration:underline }
+}
+
+/* v4.12 footer visibility tweaks */
+footer .foot-left a{ white-space:nowrap; }
+html[dir="rtl"] footer .foot-left{ order:2 }
+html[dir="rtl"] footer .foot-right{ order:1 }
