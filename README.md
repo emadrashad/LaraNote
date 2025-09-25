@@ -2,7 +2,7 @@
 
 # Laranote — Lightweight Highlights & Notes Browser Extension
 
-Laranote is a small browser extension that lets you highlight text on any webpage, attach short notes to highlights, copy highlighted text, and restore highlights across page loads. It aims to be fast, privacy-friendly (stores data locally), and supports basic localization (Arabic & English).
+LaraNote is a small browser extension that lets you highlight text on any webpage, attach short notes to highlights, copy highlighted text, and restore highlights across page loads. It aims to be fast, privacy-friendly (stores data locally), and supports basic localization (Arabic & English).
 
 ## Key features
 
