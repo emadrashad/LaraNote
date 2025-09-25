@@ -1,6 +1,6 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="./icons/Laranote-main.png" width="400"></a></p>
 
-# Laranote — Lightweight Highlights & Notes Browser Extension
+# LaraNote — Lightweight Highlights & Notes Browser Extension
 
 LaraNote is a small browser extension that lets you highlight text on any webpage, attach short notes to highlights, copy highlighted text, and restore highlights across page loads. It aims to be fast, privacy-friendly (stores data locally), and supports basic localization (Arabic & English).
 
