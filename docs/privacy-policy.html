@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaraNote - Privacy Policy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .brand-color { color: #FBBF24; }
+        .border-brand-color { border-color: #FBBF24; }
+        :target {
+            scroll-margin-top: 80px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-book-open text-brand-color mr-2"></i>
+                            LaraNote
+                        </h1>
+                    </div>
+                </a>
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="index.html#features" class="text-gray-600 hover:text-gray-900 transition-colors" data-translate="nav_features">Features</a>
+                    <a href="index.html#how-it-works" class="text-gray-600 hover:text-gray-900 transition-colors" data-translate="nav_how_it_works">How It Works</a>
+                    <a href="privacy-policy.html" class="text-gray-900 font-semibold" data-translate="nav_privacy_policy">Privacy Policy</a>
+                    <a href="troubleshooting.html" class="text-gray-600 hover:text-gray-900 transition-colors" data-translate="nav_troubleshooting">Troubleshooting</a>
+                </nav>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-16">
+        <div class="max-w-4xl mx-auto px-6" style="direction: ltr !important;">
+            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-lg">
+                <h1 class="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-900">Privacy Policy</h1>
+                <p class="text-center text-gray-500 mb-10"><strong>Effective Date:</strong> October 4, 2025</p>
+
+                <div class="space-y-8 text-gray-700">
+                    <p>LaraNote is a lightweight browser extension designed for highlighting text and adding notes directly on webpages. This policy outlines how LaraNote handles your data. Your privacy is our highest priority.</p>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-3 text-gray-900 border-b-2 border-brand-color pb-2">1. Data Collection and Transmission</h2>
+                        <p class="text-lg font-semibold text-red-600">LaraNote DOES NOT collect, transmit, store, or share any personal data, browsing history, or highlight information to any external server, database, or third party.</p>
+                        <p>The extension operates entirely within your local browser environment.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-3 text-gray-900 border-b-2 border-brand-color pb-2">2. Data Storage (Local Only)</h2>
+                        <p>All data created by you is saved <strong>only</strong> on your local machine using the browser's native storage APIs (specifically <code>chrome.storage.local</code>).</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Data Stored:</strong> Text highlights, corresponding notes, and the location needed to restore them.</li>
+                            <li><strong>Data Security:</strong> This data is stored securely in your Chrome profile and is not accessible to us or any other party.</li>
+                            <li><strong>Data Control:</strong> Deleting the extension or clearing your browser data will permanently delete your saved highlights.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-3 text-gray-900 border-b-2 border-brand-color pb-2">3. Permissions Explained</h2>
+                        <p>LaraNote requires specific permissions to perform its core function. We only request the minimum permissions necessary:</p>
+                        <div class="mt-4 space-y-4">
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="font-bold text-lg text-gray-900">"storage"</h3>
+                                <p>This permission allows the extension to save and retrieve your notes and highlights from your browser's local storage. This ensures your data persists when you close and reopen the browser.</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="font-bold text-lg text-gray-900">"activeTab" & "scripting"</h3>
+                                <p>These permissions are required to inject the LaraNote toolbar onto the webpage you are currently viewing. We do not use this to read or track your browsing activity.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-3 text-gray-900 border-b-2 border-brand-color pb-2">4. Changes to This Privacy Policy</h2>
+                        <p>We may update our Privacy Policy from time to time. We will notify users of any material changes by updating the Effective Date. Since no external data is collected, any changes will only affect how the extension functions locally.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-3 text-gray-900 border-b-2 border-brand-color pb-2">5. Contact Us</h2>
+                        <p>If you have any questions or suggestions about this Privacy Policy, please contact us:</p>
+                        <p class="mt-2"><strong>Developer:</strong> Emad Rashad</p>
+                        <p><strong>Email:</strong> <a href="mailto:emadtab97@gmail.com" class="brand-color hover:underline">emadtab97@gmail.com</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center mb-6">
+                    <i class="fas fa-book-open text-4xl text-brand-color mr-3"></i>
+                    <h3 class="text-2xl font-bold">LaraNote</h3>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    Your Digital Highlighter & Notebook.
+                </p>
+                <div class="flex justify-center space-x-6 rtl:space-x-reverse mb-8">
+                    <a href="index.html#features" class="text-gray-400 hover:text-white transition-colors" data-translate="nav_features">Features</a>
+                    <a href="index.html#how-it-works" class="text-gray-400 hover:text-white transition-colors" data-translate="nav_how_it_works">How It Works</a>
+                    <a href="privacy-policy.html" class="text-white transition-colors" data-translate="nav_privacy_policy">Privacy Policy</a>
+                    <a href="troubleshooting.html" class="text-gray-400 hover:text-white transition-colors" data-translate="nav_troubleshooting">Troubleshooting</a>
+                    <a href="https://github.com/emadrashad/LaraNote" target="_blank" class="text-gray-400 hover:text-white transition-colors">GitHub</a>
+                </div>
+                <div class="border-t border-gray-800 pt-6">
+                    <p class="text-gray-400 text-sm">
+                                        <p>&copy; <span id="year"></span> LaraNote. <span data-translate="footer_rights">All Rights Reserved.</span></p>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // Simple translation script
+        const translations = {
+            en: {
+                nav_features: "Features",
+                nav_how_it_works: "How It Works",
+                footer_rights: "All Rights Reserved.",
+            },
+            ar: {
+                nav_features: "الميزات",
+                nav_how_it_works: "كيف يعمل",
+                footer_rights: "كل الحقوق محفوظة.",
+            }
+        };
+
+        function setLanguage(lang) {
+            localStorage.setItem('LaraNote-lang', lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+        }
+
+        // Set language on page load
+        const savedLang = localStorage.getItem('LaraNote-lang') || 'en';
+        setLanguage(savedLang);
+    </script>
+</body>
+</html>
