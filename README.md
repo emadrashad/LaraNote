@@ -4,6 +4,8 @@ LaraNote is a browser extension that allows you to highlight text and take notes
 
 <a href="https://emadrashad.github.io/LaraNote/" target="_blank"><strong>Features Demo</strong></a>
 
+[![Watch the video](https://img.youtube.com/vi/YD4A_fTl7t0/maxresdefault.jpg)](https://www.youtube.com/watch?v=YD4A_fTl7t0)
+
 ![LaraNote screenshot](icons/Laranote-main.png)
 
 ## Features
