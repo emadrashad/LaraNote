@@ -76,15 +76,11 @@
 
                     <div>
                         <h2 class="text-2xl font-bold mb-3 text-gray-900 border-b-2 border-brand-color pb-2">3. Permissions Explained</h2>
-                        <p>LaraNote requires specific permissions to perform its core function. We only request the minimum permissions necessary:</p>
+                        <p>LaraNote requires only one permission to perform its core function:</p>
                         <div class="mt-4 space-y-4">
                             <div class="bg-gray-100 p-4 rounded-lg">
                                 <h3 class="font-bold text-lg text-gray-900">"storage"</h3>
-                                <p>This permission allows the extension to save and retrieve your notes and highlights from your browser's local storage. This ensures your data persists when you close and reopen the browser.</p>
-                            </div>
-                            <div class="bg-gray-100 p-4 rounded-lg">
-                                <h3 class="font-bold text-lg text-gray-900">"activeTab" & "scripting"</h3>
-                                <p>These permissions are required to inject the LaraNote toolbar onto the webpage you are currently viewing. We do not use this to read or track your browsing activity.</p>
+                                <p>This permission allows the extension to save and retrieve your notes and highlights from your browser's local storage. This ensures your data persists when you close and reopen the browser. LaraNote uses content scripts that run automatically on web pages, so no additional permissions are needed to display the highlighting toolbar.</p>
                             </div>
                         </div>
                     </div>
