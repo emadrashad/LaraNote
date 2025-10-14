@@ -1,0 +1,250 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Laranote - Test</title>
+  <link rel="stylesheet" href="popup.css" />
+  <style>
+    /* Mock Chrome storage for testing */
+    .mock-storage {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      max-width: 200px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="tit">
+      <img class="logo" src="icons/Laranote-main.png" alt="Laranote" /> 
+      <p>LaraNote</p> 
+    </div>
+
+    <button id="settings-btn" class="settings-icon" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+  </header>
+  <main id="list"></main>
+  <div id="pager" class="pager"></div>
+  <footer>
+    <div class="foot-left"></div>
+    <div class="foot-right">
+      <div>Free</div>
+    </div>
+  </footer>
+  
+  <!-- Settings Popup -->
+  <div id="settings-popup" class="settings-overlay" style="display: none;">
+    <div class="settings-panel">
+      <div class="settings-header">
+        <button id="settings-back" class="back-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <h3>Settings</h3>
+      </div>
+      
+      <div class="settings-content">
+        <section class="settings-section">
+          <label for="settings-perpage">Items per page</label>
+          <input id="settings-perpage" type="number" min="5" max="50" step="1" value="5"/>
+          <p class="settings-hint">How many notes to show per page (5–50).</p>
+        </section>
+        
+        <section class="settings-section">
+          <label for="settings-lang">Language</label>
+          <select id="settings-lang">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+          <p class="settings-hint">Interface language.</p>
+        </section>
+        
+        <section class="settings-section">
+          <button id="settings-export" class="settings-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export JSON
+          </button>
+        </section>
+      </div>
+      
+      <div class="settings-footer">
+        <button id="settings-save" class="save-button">Save Settings</button>
+        <span id="settings-status" class="status-message"></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mock-storage">
+    <strong>Test Mode:</strong><br>
+    Settings will be saved to localStorage instead of Chrome storage
+  </div>
+  
+  <script>
+    // Mock Chrome APIs for testing
+    window.chrome = {
+      storage: {
+        sync: {
+          get: function(keys, callback) {
+            const result = {};
+            const defaults = { laranote_lang: 'en', laranote_per_page: 5 };
+            
+            if (typeof keys === 'object' && keys !== null) {
+              Object.keys(keys).forEach(key => {
+                result[key] = localStorage.getItem(key) || defaults[key] || keys[key];
+              });
+            } else if (typeof keys === 'string') {
+              result[keys] = localStorage.getItem(keys) || defaults[keys];
+            }
+            
+            setTimeout(() => callback(result), 0);
+          },
+          set: function(items, callback) {
+            Object.keys(items).forEach(key => {
+              localStorage.setItem(key, items[key]);
+            });
+            if (callback) setTimeout(callback, 0);
+          }
+        }
+      }
+    };
+    
+    // Mock other functions
+    function loadAll() {
+      return Promise.resolve([]);
+    }
+    
+    // Simplified I18N
+    const I18N = {
+      en: {
+        empty: "No notes yet. Start highlighting text on web pages!",
+        prev: "Prev",
+        next: "Next",
+        page: "Page",
+        of: "of"
+      },
+      ar: {
+        empty: "لا توجد ملاحظات حتى الآن. ابدأ بتمييز النص على صفحات الويب!",
+        prev: "السابق",
+        next: "التالي",
+        page: "صفحة",
+        of: "من"
+      }
+    };
+    
+    const DEFAULT_LANG = 'en';
+    
+    // Settings functionality (simplified version of popup.js)
+    function initSettings() {
+      const settingsBtn = document.getElementById('settings-btn');
+      const settingsPopup = document.getElementById('settings-popup');
+      const settingsBack = document.getElementById('settings-back');
+      const settingsSave = document.getElementById('settings-save');
+      const settingsExport = document.getElementById('settings-export');
+      const settingsStatus = document.getElementById('settings-status');
+      
+      // Load current settings
+      function loadSettings() {
+        chrome.storage.sync.get({ laranote_per_page: 5, laranote_lang: DEFAULT_LANG }, (result) => {
+          document.getElementById('settings-perpage').value = result.laranote_per_page;
+          document.getElementById('settings-lang').value = result.laranote_lang;
+        });
+      }
+      
+      // Show settings popup
+      function showSettings() {
+        loadSettings();
+        settingsPopup.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      
+      // Hide settings popup
+      function hideSettings() {
+        settingsPopup.style.display = 'none';
+        document.body.style.overflow = '';
+        settingsStatus.textContent = '';
+      }
+      
+      // Save settings
+      function saveSettings() {
+        const perPage = Math.max(5, Math.min(50, parseInt(document.getElementById('settings-perpage').value || '5', 10)));
+        const lang = document.getElementById('settings-lang').value;
+        
+        chrome.storage.sync.set({ 
+          laranote_lang: lang, 
+          laranote_per_page: perPage 
+        }, () => {
+          settingsStatus.textContent = 'Saved!';
+          setTimeout(() => {
+            settingsStatus.textContent = '';
+            hideSettings();
+          }, 1200);
+        });
+      }
+      
+      // Export functionality
+      function exportData() {
+        const items = []; // Mock data
+        const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "laranote-export.json";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        
+        settingsStatus.textContent = 'Exported!';
+        setTimeout(() => settingsStatus.textContent = '', 1200);
+      }
+      
+      // Event listeners
+      settingsBtn.addEventListener('click', showSettings);
+      settingsBack.addEventListener('click', hideSettings);
+      settingsSave.addEventListener('click', saveSettings);
+      settingsExport.addEventListener('click', exportData);
+      
+      // Close on overlay click
+      settingsPopup.addEventListener('click', (e) => {
+        if (e.target === settingsPopup) {
+          hideSettings();
+        }
+      });
+      
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && settingsPopup.style.display === 'flex') {
+          hideSettings();
+        }
+      });
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default language
+      document.documentElement.setAttribute("dir", "ltr");
+      
+      // Show empty state
+      document.getElementById('list').innerHTML = '<div class="empty">No notes yet. Start highlighting text on web pages!</div>';
+      
+      // Initialize settings
+      initSettings();
+    });
+  </script>
+</body>
+
+</html>

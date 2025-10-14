@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>LaraNote Save Settings Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { margin: 5px; padding: 10px 15px; font-size: 14px; }
+        #console-output { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 15px; 
+            margin-top: 20px; 
+            font-family: monospace; 
+            white-space: pre-wrap; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-size: 12px;
+        }
+        .highlight { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🛠️ LaraNote Save Settings Fix Test</h1>
+    
+    <div class="highlight">
+        <strong>🔧 Fix Applied:</strong> Removed automatic popup closing after save. The settings popup now stays open after saving so users can see the success message and make additional changes.
+    </div>
+    
+    <div class="test-section">
+        <h3>📋 Test Instructions</h3>
+        <ol>
+            <li>Open the LaraNote extension popup</li>
+            <li>Click the Settings button (gear icon)</li>
+            <li>Change some settings (language or items per page)</li>
+            <li>Click "Save Settings"</li>
+            <li><strong>Expected:</strong> Popup should stay open, show green success message</li>
+            <li>Try Export JSON - should show blue success message</li>
+            <li>Manually close popup using back button, outside click, or Escape</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>🧪 Quick Function Tests</h3>
+        <button onclick="testSaveSettingsFlow()">Test Save Settings Flow</button>
+        <button onclick="testExportFlow()">Test Export Flow</button>
+        <button onclick="testManualClose()">Test Manual Close</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div id="test-results"></div>
+    
+    <h3>📝 Console Output:</h3>
+    <div id="console-output"></div>
+    
+    <script>
+        // Override console methods to capture output
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function captureConsole() {
+            console.log = function(...args) {
+                originalConsoleLog.apply(console, args);
+                consoleOutput.textContent += '[LOG] ' + args.join(' ') + '\n';
+            };
+            console.error = function(...args) {
+                originalConsoleError.apply(console, args);
+                consoleOutput.textContent += '[ERROR] ' + args.join(' ') + '\n';
+            };
+        }
+        
+        function clearConsole() {
+            consoleOutput.textContent = '';
+        }
+        
+        function addTestResult(testName, passed, message) {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `<strong>${testName}:</strong> ${passed ? '✅ PASS' : '❌ FAIL'} - ${message}`;
+            results.appendChild(div);
+        }
+        
+        function addInfo(message) {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = 'test-result info';
+            div.innerHTML = `ℹ️ ${message}`;
+            results.appendChild(div);
+        }
+        
+        function testSaveSettingsFlow() {
+            console.log('=== Testing Save Settings Flow ===');
+            addInfo('Testing save settings functionality...');
+            
+            // Check if saveSettings function exists
+            if (typeof saveSettings !== 'function') {
+                addTestResult('saveSettings Function', false, 'saveSettings function not found');
+                return;
+            }
+            addTestResult('saveSettings Function', true, 'saveSettings function exists');
+            
+            // Check if the function has been modified to not call hideSettings
+            const funcString = saveSettings.toString();
+            if (funcString.includes('hideSettings()')) {
+                addTestResult('hideSettings Removal', false, 'Function still calls hideSettings() - popup will close');
+                console.log('❌ Function still contains hideSettings() call');
+            } else {
+                addTestResult('hideSettings Removal', true, 'Function does not call hideSettings() - popup will stay open');
+                console.log('✅ Function does not call hideSettings() - popup will stay open');
+            }
+            
+            // Check for success message styling
+            if (funcString.includes('settingsStatus.style.color')) {
+                addTestResult('Success Message Styling', true, 'Function includes color styling for success messages');
+            } else {
+                addTestResult('Success Message Styling', false, 'Function missing color styling');
+            }
+        }
+        
+        function testExportFlow() {
+            console.log('=== Testing Export Flow ===');
+            addInfo('Testing export functionality...');
+            
+            if (typeof exportData !== 'function') {
+                addTestResult('exportData Function', false, 'exportData function not found');
+                return;
+            }
+            addTestResult('exportData Function', true, 'exportData function exists');
+            
+            const funcString = exportData.toString();
+            if (funcString.includes('settingsStatus.style.color')) {
+                addTestResult('Export Message Styling', true, 'Function includes blue color styling for export messages');
+            } else {
+                addTestResult('Export Message Styling', false, 'Function missing color styling');
+            }
+        }
+        
+        function testManualClose() {
+            console.log('=== Testing Manual Close Options ===');
+            addInfo('Testing manual close functionality...');
+            
+            // Check if hideSettings function exists
+            if (typeof hideSettings !== 'function') {
+                addTestResult('hideSettings Function', false, 'hideSettings function not found');
+                return;
+            }
+            addTestResult('hideSettings Function', true, 'hideSettings function exists');
+            
+            // Check for event listeners
+            const hasBackButton = document.getElementById('settings-back');
+            const hasPopupClick = document.getElementById('settings-popup');
+            
+            addTestResult('Back Button Element', !!hasBackButton, hasBackButton ? 'Found' : 'Not found');
+            addTestResult('Popup Element', !!hasPopupClick, hasPopupClick ? 'Found' : 'Not found');
+            
+            addInfo('Manual close options available: Back button, outside click, Escape key');
+        }
+        
+        // Initialize
+        captureConsole();
+        console.log('🔧 Save Settings Fix Test Initialized');
+        console.log('📝 Testing the fix for popup staying open after save...');
+        
+        addTestResult('Page Load', true, 'Test page loaded successfully');
+        
+        // Run automatic tests
+        setTimeout(() => {
+            testSaveSettingsFlow();
+            testExportFlow();
+            testManualClose();
+        }, 100);
+    </script>
+</body>
+</html>

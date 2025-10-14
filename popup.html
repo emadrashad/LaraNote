@@ -14,7 +14,12 @@
       <p>LaraNote</p> 
     </div>
 
-    <div>settings</div>
+    <button id="settings-btn" class="settings-icon" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
   </header>
   <main id="list"></main>
   <div id="pager" class="pager"></div>
@@ -22,9 +27,64 @@
     <div class="foot-left"></div>
     <div class="foot-right">
       <div>Free</div>
-      <button id="export" style="display:none">Export JSON</button>
     </div>
   </footer>
+  
+  <!-- Settings Popup -->
+  <div id="settings-popup" class="settings-overlay" style="display: none;">
+    <div class="settings-panel">
+      <div class="settings-header">
+        <button id="settings-back" class="back-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <h3 data-i18n="settings_title">Settings</h3>
+      </div>
+      
+      <div class="settings-content">
+        <section class="settings-section">
+          <label for="settings-perpage" data-i18n="items_per_page">Items per page</label>
+          <select id="settings-perpage">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <p class="settings-hint" data-i18n="items_per_page_hint">How many notes to show per page.</p>
+        </section>
+        
+        <section class="settings-section">
+          <label for="settings-lang" data-i18n="language">Language</label>
+          <select id="settings-lang">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+          <p class="settings-hint" data-i18n="language_hint">Interface language.</p>
+        </section>
+        
+        <section class="settings-section">
+          <button id="settings-export" class="settings-button" data-i18n="export_json">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export JSON
+          </button>
+        </section>
+      </div>
+      
+      <div class="settings-footer">
+        <button id="settings-save" class="save-button" data-i18n="save_settings">Save Settings</button>
+        <span id="settings-status" class="status-message"></span>
+      </div>
+    </div>
+  </div>
+  
   <script src="popup.js"></script>
 </body>
 
