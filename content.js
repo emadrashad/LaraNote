@@ -12,9 +12,20 @@ const arabicFontCSS = `
 
   [lang="ar"] .yh-toolbar,
   [lang="ar"] .yh-note-popup,
-  [lang="ar"] .yh-highlight,
-  [lang="ar"] .yh-badge {
+  [lang="ar"] .yh-badge,
+  [lang="ar"] .meta {
     font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+  }
+
+  /* Exclude note content and header text from Arabic font - MORE SPECIFIC */
+  body[lang="ar"] .note,
+  body[lang="ar"] header .tit p,
+  body[lang="ar"] .note[dir="auto"],
+  body[lang="ar"] .url,
+  html[lang="ar"] body .note,
+  html[lang="ar"] body header .tit p,
+  html[lang="ar"] body .url {
+    font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
   }
 
   [lang="ar"] .yh-toolbar {

@@ -12,12 +12,18 @@
 /* Arabic Language Specific Styling */
 [lang="ar"] body,
 [lang="ar"] .card,
-[lang="ar"] .note,
 [lang="ar"] button,
 [lang="ar"] select,
 [lang="ar"] input,
 [lang="ar"] textarea {
   font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
+}
+
+/* Exclude note content and header text from Arabic font */
+[lang="ar"] .note,
+[lang="ar"] header .tit p,
+[lang="ar"] .url {
+  font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
 }
 
 /* Enhanced Arabic Typography */
@@ -28,15 +34,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Arabic Font Weight Adjustments for Better Readability */
-[lang="ar"] .url {
-  font-weight: 500; /* Medium weight for URLs */
-}
+/* REMOVED: URL font-weight to avoid Arabic font conflicts */
+/* [lang="ar"] .url {
+  font-weight: 500;
+} */
 
-[lang="ar"] .note {
-  font-weight: 400; /* Regular weight for notes */
-  line-height: 1.6; /* Better line height for Arabic */
-}
+/* REMOVED: Note styling moved to main CSS to avoid font conflicts */
+/* [lang="ar"] .note {
+  font-weight: 400;
+  line-height: 1.6;
+} */
 
 [lang="ar"] header .tit {
   font-weight: 700; /* Bold for titles */
@@ -56,13 +63,15 @@
   font-size: 14px; /* Slightly larger for Arabic readability */
 }
 
-[lang="ar"] .url {
+/* REMOVED: URL font-size to avoid Arabic font conflicts */
+/* [lang="ar"] .url {
   font-size: 12px;
-}
+} */
 
-[lang="ar"] .note {
+/* REMOVED: Note font-size to avoid conflicts */
+/* [lang="ar"] .note {
   font-size: 13px;
-}
+} */
 
 [lang="ar"] .meta {
   font-size: 11px;
@@ -92,9 +101,10 @@
     font-size: 13px;
   }
   
-  [lang="ar"] .note {
+  /* REMOVED: Note responsive font-size to avoid conflicts */
+  /* [lang="ar"] .note {
     font-size: 12px;
-  }
+  } */
 }
 
 /* Arabic Font Loading Animation */

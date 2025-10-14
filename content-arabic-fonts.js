@@ -15,10 +15,21 @@ const arabicFontCSS = `
   [lang="ar"] .yh-toolbar *,
   [lang="ar"] .yh-note-pop,
   [lang="ar"] .yh-note-pop *,
-  [lang="ar"] .yh-highlight,
   [lang="ar"] .yh-note-item,
-  [lang="ar"] .yh-badge {
+  [lang="ar"] .yh-badge,
+  [lang="ar"] .meta {
     font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
+  }
+
+  /* Exclude note content and header text from Arabic font - MORE SPECIFIC */
+  body[lang="ar"] .note,
+  body[lang="ar"] header .tit p,
+  body[lang="ar"] .note[dir="auto"],
+  body[lang="ar"] .url,
+  html[lang="ar"] body .note,
+  html[lang="ar"] body header .tit p,
+  html[lang="ar"] body .url {
+    font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
   }
   
   /* Enhanced Arabic Typography */
@@ -48,11 +59,11 @@ const arabicFontCSS = `
     font-size: 11px;
   }
   
-  /* Arabic Highlight Text */
-  [lang="ar"] .yh-highlight {
+  /* Arabic Highlight Text - REMOVED: Don't apply Arabic font to highlighted text */
+  /* [lang="ar"] .yh-highlight {
     font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif;
     font-weight: 400;
-  }
+  } */
   
   /* Arabic Font Loading Animation */
   .arabic-font-loading {
