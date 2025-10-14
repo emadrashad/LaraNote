@@ -41,7 +41,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icons/*.png"
+        "icons/*.png",
+        "fonts/PlaypenSansArabic-VariableFont_wght.ttf",
+        "fonts/playpen-arabic.css"
       ],
       "matches": [
         "<all_urls>"

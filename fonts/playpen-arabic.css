@@ -1,0 +1,115 @@
+/* Playpen Sans Arabic Font Integration for LaraNote */
+
+/* Arabic Font Face Declaration */
+@font-face {
+  font-family: 'Playpen Sans Arabic';
+  src: url('PlaypenSansArabic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* Variable font weight range */
+  font-style: normal;
+  font-display: swap; /* Better performance */
+}
+
+/* Arabic Language Specific Styling */
+[lang="ar"] body,
+[lang="ar"] .card,
+[lang="ar"] .note,
+[lang="ar"] button,
+[lang="ar"] select,
+[lang="ar"] input,
+[lang="ar"] textarea {
+  font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
+}
+
+/* Enhanced Arabic Typography */
+[lang="ar"] {
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Arabic Font Weight Adjustments for Better Readability */
+[lang="ar"] .url {
+  font-weight: 500; /* Medium weight for URLs */
+}
+
+[lang="ar"] .note {
+  font-weight: 400; /* Regular weight for notes */
+  line-height: 1.6; /* Better line height for Arabic */
+}
+
+[lang="ar"] header .tit {
+  font-weight: 700; /* Bold for titles */
+}
+
+[lang="ar"] .meta {
+  font-weight: 400; /* Regular for metadata */
+}
+
+/* RTL-Specific Arabic Enhancements */
+[dir="rtl"][lang="ar"] {
+  font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif;
+}
+
+/* Arabic Font Size Adjustments */
+[lang="ar"] body {
+  font-size: 14px; /* Slightly larger for Arabic readability */
+}
+
+[lang="ar"] .url {
+  font-size: 12px;
+}
+
+[lang="ar"] .note {
+  font-size: 13px;
+}
+
+[lang="ar"] .meta {
+  font-size: 11px;
+}
+
+/* Arabic Button Text */
+[lang="ar"] button {
+  font-weight: 500;
+  letter-spacing: 0.5px; /* Slight letter spacing for Arabic */
+}
+
+/* Settings Popup Arabic Font */
+[lang="ar"] .settings-popup,
+[lang="ar"] .settings-popup * {
+  font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
+}
+
+/* Arabic Highlight Text */
+[lang="ar"] .highlight-text {
+  font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif;
+  font-weight: 400;
+}
+
+/* Responsive Arabic Typography */
+@media (max-width: 400px) {
+  [lang="ar"] body {
+    font-size: 13px;
+  }
+  
+  [lang="ar"] .note {
+    font-size: 12px;
+  }
+}
+
+/* Arabic Font Loading Animation */
+.arabic-font-loading {
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  transition: font-family 0.3s ease;
+}
+
+.arabic-font-loaded {
+  font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif;
+}
+
+/* Print Styles for Arabic */
+@media print {
+  [lang="ar"] {
+    font-family: 'Playpen Sans Arabic', 'Arial', sans-serif;
+  }
+}

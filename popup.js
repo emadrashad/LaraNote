@@ -266,6 +266,16 @@ function updateSettingsTranslations(lang) {
       svg.setAttribute('points', lang === 'ar' ? '9 18 15 12 9 6' : '15 18 9 12 15 6');
     }
   }
+  
+  // Apply Arabic font when language is Arabic
+  if (lang === 'ar') {
+    document.documentElement.setAttribute('lang', 'ar');
+    document.body.classList.add('arabic-font-loaded');
+    document.body.classList.remove('arabic-font-loading');
+  } else {
+    document.documentElement.setAttribute('lang', 'en');
+    document.body.classList.remove('arabic-font-loaded');
+  }
 }
   
 // Load current settings into settings popup
@@ -351,6 +361,16 @@ async function saveSettings(e) {
   __perPage = perPage;
   __lang = lang;
   document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+  
+  // Apply Arabic font and language attributes
+  if (lang === 'ar') {
+    document.documentElement.setAttribute('lang', 'ar');
+    document.body.classList.add('arabic-font-loaded');
+    document.body.classList.remove('arabic-font-loading');
+  } else {
+    document.documentElement.setAttribute('lang', 'en');
+    document.body.classList.remove('arabic-font-loaded');
+  }
   
   // Update translations
   updateSettingsTranslations(lang);

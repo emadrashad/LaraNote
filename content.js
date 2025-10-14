@@ -1,12 +1,83 @@
 /* This is the final, complete, and CSP-compliant content script.
    It eliminates all inline script execution wrappers to fix the 'script-src none' errors. */
 
+// Arabic font CSS injection
+const arabicFontCSS = `
+  @font-face {
+    font-family: 'Playpen Sans Arabic';
+    src: url('${chrome.runtime.getURL("fonts/PlaypenSansArabic-VariableFont_wght.ttf")}') format('truetype');
+    font-weight: 300 800;
+    font-style: normal;
+  }
+
+  [lang="ar"] .yh-toolbar,
+  [lang="ar"] .yh-note-popup,
+  [lang="ar"] .yh-highlight,
+  [lang="ar"] .yh-badge {
+    font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+  }
+
+  [lang="ar"] .yh-toolbar {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  [lang="ar"] .yh-note-popup {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [lang="ar"] .yh-note-popup textarea {
+    font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [lang="ar"] .yh-badge {
+    font-size: 12px;
+    font-weight: 500;
+  }
+`;
+
+// Inject Arabic font CSS
+function injectArabicFontCSS() {
+  if (document.getElementById('yh-arabic-fonts')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'yh-arabic-fonts';
+  style.textContent = arabicFontCSS;
+  document.head.appendChild(style);
+}
+
+// Apply Arabic font based on language
+function applyArabicFont() {
+  chrome.storage.local.get(['lang']).then(result => {
+    const lang = result.lang || 'en';
+    if (lang === 'ar') {
+      document.documentElement.lang = 'ar';
+      document.documentElement.dir = 'rtl';
+    } else {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = 'ltr';
+    }
+  });
+}
+
+// Listen for language changes
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.lang) {
+    applyArabicFont();
+  }
+});
+
 const AR = { highlight: "تظليل", note: "ملاحظة", copy: "نسخ", remove: "إزالة", saved: "تم الحفظ", addNotePlaceholder: "اكتب ملاحظتك هنا...", notes: "ملاحظات", cancel: "إلغاء", save: "حفظ" };
 const KEY_PREFIX = "yh_notes_v1::"; 
 const PAGE_KEY = KEY_PREFIX + location.origin + location.pathname;
 let toolbarEl = null, notePopEl = null, currentRange = null;
 
-// --- Utility Functions ---
+// Initialize Arabic font support
+injectArabicFontCSS();
+applyArabicFont();
 
 function scrollToHighlightById(id) {
   const el = document.querySelector(`.yh-highlight[data-yh-id="${id}"]`);
