@@ -161,33 +161,27 @@ function rerender() {
 
 async function start() {
   try {
-    console.log('start() function called');
+    
     __lang = await getLang();
     document.documentElement.setAttribute("dir", __lang === "ar" ? "rtl" : "ltr");
     __perPage = await getPerPage();
     __allItems = await loadAll();
     __page = 1;
     rerender();
-    console.log('start() function completed successfully');
     
     // Check if settings button exists after rendering
     const settingsBtn = document.getElementById('settings-btn');
-    console.log('Settings button after start():', settingsBtn ? 'FOUND' : 'NOT FOUND');
+    
     if (settingsBtn) {
-      console.log('Settings button element:', settingsBtn);
       // Add event listener here as a backup
       settingsBtn.addEventListener('click', () => {
-        console.log('Settings button clicked from start() backup listener');
         // Find the showSettings function from the closure
         if (typeof showSettings === 'function') {
           showSettings();
-        } else {
-          console.log('showSettings function not available yet');
         }
       });
     }
   } catch (e) {
-    console.error("Laranote popup start error:", e);
     const root = document.getElementById("list");
     if (root) root.innerHTML = '<div class="empty">Error loading notes. See console.</div>';
   }
@@ -213,33 +207,21 @@ let __allItems = [];
 
 // Settings popup functionality
 function initSettings() {
-  console.log('initSettings called, readyState:', document.readyState);
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSettingsInternal);
-    console.log('Added DOMContentLoaded listener');
   } else {
-    console.log('DOM already ready, calling initSettingsInternal directly');
     initSettingsInternal();
   }
 }
 
 function initSettingsInternal() {
-  console.log('initSettingsInternal called');
   settingsBtn = document.getElementById('settings-btn');
   settingsPopup = document.getElementById('settings-popup');
   settingsBack = document.getElementById('settings-back');
   settingsSave = document.getElementById('settings-save');
   settingsExport = document.getElementById('settings-export');
   settingsStatus = document.getElementById('settings-status');
-  
-  console.log('Settings elements found:');
-  console.log('settingsBtn:', settingsBtn);
-  console.log('settingsPopup:', settingsPopup);
-  console.log('settingsBack:', settingsBack);
-  console.log('settingsSave:', settingsSave);
-  console.log('settingsExport:', settingsExport);
-  console.log('settingsStatus:', settingsStatus);
   
   // Load current settings
   loadSettings();
@@ -248,7 +230,6 @@ function initSettingsInternal() {
   setupSettingsEventListeners();
   setupSaveButton();
   
-  console.log('Settings initialization completed');
 }
 
 // Update settings translations
@@ -297,7 +278,6 @@ async function loadSettings() {
   
 // Show settings popup
 function showSettings() {
-  console.log('showSettings called');
   loadSettings();
   settingsPopup.style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -316,7 +296,6 @@ function showSettings() {
   // Check if save button exists after showing
   setTimeout(() => {
     const saveBtn = document.getElementById('settings-save');
-    console.log('Save button after showSettings:', saveBtn ? 'FOUND' : 'NOT FOUND');
   }, 200);
 }
   
@@ -336,7 +315,6 @@ function hideSettings() {
   
 // Save settings
 async function saveSettings(e) {
-  console.log('saveSettings called');
   // Prevent any event bubbling and multiple saves
   if (e) {
     e.preventDefault();
@@ -345,14 +323,12 @@ async function saveSettings(e) {
   
   // Prevent multiple saves
   if (isSaving) {
-    console.log('Save already in progress, returning');
     return;
   }
   isSaving = true;
   
   // Set preventHide flag for the entire save process
   if (settingsPopup) settingsPopup.dataset.preventHide = 'true';
-  console.log('Starting save process...');
   
   const perPage = parseInt(document.getElementById('settings-perpage').value || '5', 10);
   const lang = document.getElementById('settings-lang').value;
@@ -445,7 +421,7 @@ async function exportData() {
       }, 1200);
     }
   } catch (err) {
-    console.error('Export error:', err);
+   
   }
 }
   
@@ -453,17 +429,17 @@ async function exportData() {
 function setupSettingsEventListeners() {
   if (settingsBtn) {
     settingsBtn.addEventListener('click', showSettings);
-    console.log('Settings button event listener attached');
+
   }
   
   if (settingsBack) {
     settingsBack.addEventListener('click', hideSettings);
-    console.log('Settings back button event listener attached');
+
   }
   
   if (settingsExport) {
     settingsExport.addEventListener('click', exportData);
-    console.log('Settings export button event listener attached');
+
   }
   
   // Close settings when clicking outside
@@ -473,7 +449,7 @@ function setupSettingsEventListeners() {
         hideSettings();
       }
     });
-    console.log('Settings popup click event listener attached');
+
   }
   
   // Close settings on Escape key
@@ -482,13 +458,13 @@ function setupSettingsEventListeners() {
       hideSettings();
     }
   });
-  console.log('Escape key event listener attached');
+
+
 }
 
 // Setup save button with retry mechanism
 function setupSaveButton() {
   const saveButton = document.getElementById('settings-save');
-  console.log('setupSaveButton called, saveButton found:', !!saveButton);
   
   if (saveButton) {
     saveButton.addEventListener('click', (e) => {
@@ -496,15 +472,15 @@ function setupSaveButton() {
       e.stopPropagation();
       saveSettings(e);
     });
-    console.log('Save button event listener attached');
+
   } else {
-    console.log('Save button not found, listing all settings elements:');
+   
     const allSettingsElements = document.querySelectorAll('[id^="settings"]');
     allSettingsElements.forEach(el => console.log('Found:', el.id));
     
     // Retry after a short delay
     setTimeout(() => {
-      console.log('Retrying to find save button...');
+     
       const retrySaveButton = document.getElementById('settings-save');
       if (retrySaveButton) {
         retrySaveButton.addEventListener('click', (e) => {
@@ -512,9 +488,7 @@ function setupSaveButton() {
           e.stopPropagation();
           saveSettings(e);
         });
-        console.log('Save button event listener attached on retry');
-      } else {
-        console.error('Save button NOT found even after retry!');
+       
       }
     }, 500);
   }
@@ -526,7 +500,7 @@ setupSaveButton();
 // Fallback: Use event delegation for save button clicks
 document.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'settings-save') {
-    console.log('Save button clicked via event delegation');
+  
     e.preventDefault();
     e.stopPropagation();
     saveSettings(e);
@@ -534,6 +508,4 @@ document.addEventListener('click', (e) => {
 });
 
 start();
-console.log('About to call initSettings');
-console.log('Save button exists on page load:', document.getElementById('settings-save') ? 'YES' : 'NO');
 initSettings();
