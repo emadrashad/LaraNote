@@ -11,7 +11,7 @@ const arabicFontCSS = `
   }
 
   [lang="ar"] .yh-toolbar,
-  [lang="ar"] .yh-note-popup,
+  [lang="ar"] .yh-note-pop,
   [lang="ar"] .yh-badge,
   [lang="ar"] .meta {
     font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
@@ -33,12 +33,12 @@ const arabicFontCSS = `
     line-height: 1.4;
   }
 
-  [lang="ar"] .yh-note-popup {
+  [lang="ar"] .yh-note-pop {
     font-size: 14px;
     line-height: 1.5;
   }
 
-  [lang="ar"] .yh-note-popup textarea {
+  [lang="ar"] .yh-note-pop textarea {
     font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
     font-size: 14px;
     line-height: 1.5;
