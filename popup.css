@@ -588,7 +588,7 @@ footer {
 }
 
 .settings-button {
-  width: 100%;
+  /* width: 100%; */
   background: #132036;
   border: 1px solid #20314d;
   color: #e5e7eb;
@@ -602,21 +602,19 @@ footer {
   transition: background-color 0.2s ease;
 }
 
-.settings-button:hover {
-  background: #1a2b45;
-}
+
 
 .settings-footer {
   padding: 16px 20px;
   border-top: 1px solid var(--border, #1f2937);
   background: var(--panel, #0e1628);
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
 }
 
 .save-button {
-  flex: 1;
+
   background: var(--brand-yellow, #FACC15);
   border: 1px solid #d4b300;
   color: #111827;
@@ -634,6 +632,7 @@ footer {
 
 .status-message {
   font-size: 12px;
+  font-weight: bold;
   color: #93c5fd;
   min-width: 50px;
 }
@@ -692,6 +691,7 @@ footer {
   .settings-footer {
     background: #ffffff;
     border-color: #e5e7eb;
+    justify-content: space-between;
   }
   
   .settings-header h3,
@@ -741,17 +741,10 @@ footer {
   transition: background 0.2s ease;
   margin-top: 15px;
   display: block;
-  width: 100%;
   text-align: center;
   box-sizing: border-box;
 }
 
-.settings-export:hover {
-  background: #357abd;
-} align-items: center;
-  justify-content: space-between;
-  padding: 10px
-}
 
 footer .foot-left {
   font-size: 12px;
