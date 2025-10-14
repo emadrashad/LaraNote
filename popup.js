@@ -1,4 +1,3 @@
-
 // Laranote popup v4.13 — clean build
 const KEY_PREFIX = "yh_notes_v1::";
 const DEFAULT_LANG = "ar";
@@ -7,6 +6,8 @@ const I18N = {
   ar: {
     refresh: "تحديث",
     export: "تصدير JSON",
+    options: "الإعدادات",
+    enableToolbar: "تفعيل الشريط",
     empty: "لا توجد ملاحظات بعد. قم بتظليل نص على صفحة لإضافة ملاحظات.",
     highlight: "تظليل",
     note: "ملاحظة",
@@ -19,6 +20,8 @@ const I18N = {
   en: {
     refresh: "Refresh",
     export: "Export JSON",
+    options: "Options",
+    enableToolbar: "Enable Toolbar",
     empty: "No notes yet. Select text on a page to add highlights & notes.",
     highlight: "Highlight",
     note: "Note",
@@ -152,6 +155,9 @@ function setFooterAndButtons() {
   const T = I18N[__lang] || I18N[DEFAULT_LANG];
   const r = document.getElementById("refresh"); if (r) r.textContent = T.refresh;
   const e = document.getElementById("export"); if (e) { e.textContent = T.export; e.style.display = "none"; }
+  const o = document.getElementById("optionsBtn"); if (o) o.textContent = T.options || "Options";
+  const tl = document.getElementById("toggleToolbarLabel"); if (tl) tl.textContent = T.enableToolbar || "Enable Toolbar";
+  const tw = document.querySelector("label.toggle"); if (tw) tw.title = T.enableToolbar || "Enable Toolbar";
   const made = document.getElementById("made");
   if (made) {
     made.textContent = T.made;
@@ -169,6 +175,20 @@ async function start() {
     document.documentElement.setAttribute("dir", __lang === "ar" ? "rtl" : "ltr");
     __perPage = await getPerPage();
     setFooterAndButtons();
+
+    const tgl = document.getElementById("toggleToolbar");
+    if (tgl && chrome?.storage?.sync) {
+      try {
+        const { laranote_toolbar_enabled } = await chrome.storage.sync.get({ laranote_toolbar_enabled: true });
+        tgl.checked = !!laranote_toolbar_enabled;
+      } catch (e) { /* ignore */ }
+      tgl.addEventListener("change", async (ev) => {
+        try {
+          await chrome.storage.sync.set({ laranote_toolbar_enabled: !!ev.target.checked });
+        } catch (e) { /* ignore */ }
+      });
+    }
+
     __allItems = await loadAll();
     __page = 1;
     rerender();
@@ -191,5 +211,9 @@ document.getElementById("export").addEventListener("click", async () => {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
+const optBtn = document.getElementById("optionsBtn");
+if (optBtn && chrome.runtime && chrome.runtime.openOptionsPage) {
+  optBtn.addEventListener("click", () => chrome.runtime.openOptionsPage());
+}
 
 start();

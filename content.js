@@ -5,6 +5,8 @@ const AR = { highlight: "تظليل", note: "ملاحظة", copy: "نسخ", remo
 const KEY_PREFIX = "yh_notes_v1::"; 
 const PAGE_KEY = KEY_PREFIX + location.origin + location.pathname;
 let toolbarEl = null, notePopEl = null, currentRange = null;
+let toolbarEnabled = true;
+try { chrome.storage.sync.get({ laranote_toolbar_enabled: true }, ({ laranote_toolbar_enabled }) => { toolbarEnabled = !!laranote_toolbar_enabled; }); } catch (e) {}
 
 // --- Utility Functions ---
 
@@ -42,7 +44,7 @@ function createToolbar() {
   el.addEventListener("click", onToolbarClick);
   document.body.appendChild(el); toolbarEl = el; return el;
 }
-function showToolbarAt(x, y) { const t = createToolbar(); t.style.left = x + "px"; t.style.top = y + "px"; t.style.display = "flex"; }
+function showToolbarAt(x, y) { if (!toolbarEnabled) return; const t = createToolbar(); if (!t) return; t.style.left = x + "px"; t.style.top = y + "px"; t.style.display = "flex"; }
 function hideToolbar() { if (toolbarEl) toolbarEl.style.display = "none"; }
 function makeId() { return "yh_" + Math.random().toString(36).slice(2, 9); }
 function wrapRangeWithSpan(range, id) {
@@ -454,7 +456,7 @@ function applyToolbarLang() {
 // --- Event Listeners and Initial Execution Flow ---
 
 // 1. Setup Toolbar Listeners
-document.addEventListener("mouseup", () => { setTimeout(() => { const r = getSelectionRangeSafe(); if (!r) { hideToolbar(); currentRange = null; return; } currentRange = r; const pt = selectionClientPoint(r); showToolbarAt(pt.x, pt.y); }, 0); });
+document.addEventListener("mouseup", () => { setTimeout(() => { if (!toolbarEnabled) { hideToolbar(); currentRange = null; return; } const r = getSelectionRangeSafe(); if (!r) { hideToolbar(); currentRange = null; return; } currentRange = r; const pt = selectionClientPoint(r); showToolbarAt(pt.x, pt.y); }, 0); });
 document.addEventListener("mousedown", e => { if (toolbarEl && !toolbarEl.contains(e.target)) hideToolbar(); if (notePopEl && !notePopEl.contains(e.target)) hideNotePopup(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") { hideToolbar(); hideNotePopup(); window.getSelection()?.removeAllRanges(); } });
 
@@ -462,7 +464,15 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { hideToolba
 applyToolbarLang();
 if (chrome.storage && chrome.storage.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "sync" && changes.laranote_lang) applyToolbarLang();
+    if (area === "sync") {
+      if (changes.laranote_lang) applyToolbarLang();
+      if (changes.laranote_toolbar_enabled) {
+        try {
+          toolbarEnabled = !!changes.laranote_toolbar_enabled.newValue;
+          if (!toolbarEnabled) hideToolbar();
+        } catch (e) {}
+      }
+    }
   });
 }
 const mo = new MutationObserver((m) => applyToolbarLang());
