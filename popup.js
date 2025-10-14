@@ -15,7 +15,7 @@ const I18N = {
     of: "من",
     // Settings translations
     settings_title: "الإعدادات",
-    items_per_page: "العناصر لكل صفحة",
+    items_per_page: "الملاحظات لكل صفحة",
     items_per_page_hint: "عدد الملاحظات لكل صفحة.",
     language: "اللغة",
     language_hint: "لغة الواجهة.",
