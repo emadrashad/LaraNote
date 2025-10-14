@@ -1,11 +1,10 @@
 
 // Laranote popup v4.13 — clean build
 const KEY_PREFIX = "yh_notes_v1::";
-const DEFAULT_LANG = "ar";
+const DEFAULT_LANG = "en";
 
 const I18N = {
   ar: {
-    refresh: "تحديث",
     export: "تصدير JSON",
     empty: "لا توجد ملاحظات بعد. قم بتظليل نص على صفحة لإضافة ملاحظات.",
     highlight: "تظليل",
@@ -14,10 +13,9 @@ const I18N = {
     next: "التالي",
     page: "صفحة",
     of: "من",
-    made: "❤️ By Emad Rashad",
+   
   },
   en: {
-    refresh: "Refresh",
     export: "Export JSON",
     empty: "No notes yet. Select text on a page to add highlights & notes.",
     highlight: "Highlight",
@@ -26,7 +24,7 @@ const I18N = {
     next: "Next",
     page: "Page",
     of: "of",
-    made: "By Emad Rashad ❤️",
+   
   }
 };
 
@@ -81,7 +79,7 @@ async function loadAll() {
 // Pagination state
 let __allItems = [];
 let __page = 1;
-let __perPage = 10;
+let __perPage = 5;
 let __lang = DEFAULT_LANG;
 
 function totalPages() {
@@ -150,17 +148,9 @@ function rerender() {
 // Footer & buttons
 function setFooterAndButtons() {
   const T = I18N[__lang] || I18N[DEFAULT_LANG];
-  const r = document.getElementById("refresh"); if (r) r.textContent = T.refresh;
+
   const e = document.getElementById("export"); if (e) { e.textContent = T.export; e.style.display = "none"; }
-  const made = document.getElementById("made");
-  if (made) {
-    made.textContent = T.made;
-    made.href = "https://github.com/emadrashad";
-    made.onclick = (ev) => { ev.preventDefault(); chrome.tabs.create({ url: "https://github.com/emadrashad" }); };
-  }
-  const mv = chrome.runtime.getManifest ? chrome.runtime.getManifest() : null;
-  const version = mv && mv.version ? "v" + mv.version : "v—";
-  const vb = document.getElementById("verBadge"); if (vb) vb.textContent = version;
+  
 }
 
 async function start() {
@@ -180,7 +170,7 @@ async function start() {
 }
 
 // Events
-document.getElementById("refresh").addEventListener("click", start);
+
 document.getElementById("export").addEventListener("click", async () => {
   const items = await loadAll();
   const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
