@@ -1,5 +1,5 @@
 
-const DEFAULT_LANG = 'ar';
+const DEFAULT_LANG = 'en';
 
 async function load() {
   const { laranote_per_page } = await chrome.storage.sync.get({ laranote_per_page: 10 });

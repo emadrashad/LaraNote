@@ -417,8 +417,8 @@ const LANG_MAP = {
 
 function applyToolbarLang() {
   try {
-    chrome.storage.sync.get({ laranote_lang: "ar" }, ({ laranote_lang }) => {
-      const T = LANG_MAP[laranote_lang] || LANG_MAP.ar;
+    chrome.storage.sync.get({ laranote_lang: "en" }, ({ laranote_lang }) => {
+      const T = LANG_MAP[laranote_lang] || LANG_MAP.en;
       const dir = laranote_lang === "ar" ? "rtl" : "ltr";
       
       document.querySelectorAll(".yh-toolbar").forEach(tb => tb.setAttribute("dir", dir));
