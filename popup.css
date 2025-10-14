@@ -29,7 +29,7 @@
   --button-border-dark: #20314d;
   
   /* Brand Colors */
-  --brand-yellow: #FACC15;
+  --brand-yellow: #fecd2e;
   --brand-green: #10b981;
   --brand-green-dark: #059669;
   
@@ -94,8 +94,8 @@ header {
 }
 
 header .logo {
-  width: 22px;
-  height: 22px;
+  width: 60px;
+  height: 60px;
   border-radius: 6px;
   background: var(--brand-yellow);
 }
@@ -176,6 +176,7 @@ header .logo {
   color: var(--text-secondary);
   text-align: center;
   padding: 20px;
+  margin: auto;
 }
 
 /* ===== FOOTER ===== */
@@ -189,6 +190,7 @@ footer {
   padding: 10px 12px;
   border-top: 1px solid var(--border);
   background: var(--bg-secondary);
+  direction: ltr !important;
 }
 
 footer .foot-left {
