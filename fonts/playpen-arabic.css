@@ -19,8 +19,8 @@
   font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
 }
 
-/* Exclude note content and header text from Arabic font */
-[lang="ar"] .note,
+/* Exclude note content and header text from Arabic font by default */
+[lang="ar"] .note:not([lang="ar"]),
 [lang="ar"] header .tit p,
 [lang="ar"] .url {
   font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;

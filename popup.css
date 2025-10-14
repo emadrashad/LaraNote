@@ -119,6 +119,22 @@ button:hover {
   unicode-bidi: plaintext;
 }
 
+/* Arabic font for note content when it contains Arabic text */
+.note[lang="ar"] {
+  font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Arabic font face declaration for popup */
+@font-face {
+  font-family: 'Playpen Sans Arabic';
+  src: url('fonts/PlaypenSansArabic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Derive base direction from content */
 [dir="rtl"] header,
 [dir="rtl"] footer {

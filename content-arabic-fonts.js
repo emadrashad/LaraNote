@@ -22,14 +22,16 @@ const arabicFontCSS = `
     font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
   }
 
-  /* Exclude note content and header text from Arabic font - TARGETED APPROACH */
-  .yh-note-pop[lang="ar"] .note,
-  .yh-note-pop[lang="ar"] header .tit p,
-  .yh-note-pop[lang="ar"] .note[dir="auto"],
+  /* Apply Arabic font to note content when it contains Arabic text */
+  .note[lang="ar"] {
+    font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
+  }
+  
+  /* Exclude URL and header text from Arabic font */
   .yh-note-pop[lang="ar"] .url,
-  .yh-toolbar[lang="ar"] .note,
-  .yh-toolbar[lang="ar"] header .tit p,
-  .yh-toolbar[lang="ar"] .url {
+  .yh-note-pop[lang="ar"] header .tit p,
+  .yh-toolbar[lang="ar"] .url,
+  .yh-toolbar[lang="ar"] header .tit p {
     font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
   }
   

@@ -114,9 +114,14 @@ function render(items, lang) {
     const d = new Date(it.createdAt);
     const el = document.createElement("div");
     el.className = "card";
+    
+    // Detect if note content contains Arabic text
+    const noteContent = it.hasNote ? it.notes[0] : (it.text || "");
+    const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(noteContent);
+    
     el.innerHTML = `
       <div class="url">${it.url}</div>
-      <div class="note" dir="auto">${trimText((it.hasNote ? it.notes[0] : (it.text || "")), 100)}</div>
+      <div class="note" dir="auto" ${hasArabic ? 'lang="ar"' : ''}>${trimText(noteContent, 100)}</div>
       <div class="meta"><span>${d.toLocaleString()}</span><span>${it.hasNote ? `${T.highlight} · ${T.note}` : T.highlight}</span></div>
     `;
     el.addEventListener("click", () => {
