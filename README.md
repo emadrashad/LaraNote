@@ -53,9 +53,8 @@ If you want to install the extension manually or contribute to the project:
 
 ## Permissions
 
-* **storage:** To save your highlights and notes.
-* **activeTab:** To interact with the currently active tab.
-* **scripting:** To inject the highlighting and note-taking functionality into webpages.
+The extension requires the following permission:
+* **storage:** To save your highlights and notes locally on your device. All data is stored in your browser's local storage and never transmitted to external servers.
 
 ## Contributing
 
