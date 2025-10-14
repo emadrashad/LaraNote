@@ -2,7 +2,7 @@
 const DEFAULT_LANG = 'en';
 
 async function load() {
-  const { laranote_per_page } = await chrome.storage.sync.get({ laranote_per_page: 10 });
+  const { laranote_per_page } = await chrome.storage.sync.get({ laranote_per_page: 5 });
   document.getElementById('perpage').value = laranote_per_page;
   const { laranote_lang } = await chrome.storage.sync.get({ laranote_lang: DEFAULT_LANG });
   document.getElementById('lang').value = laranote_lang || DEFAULT_LANG;

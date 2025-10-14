@@ -33,7 +33,7 @@ async function getLang() {
   return laranote_lang || DEFAULT_LANG;
 }
 async function getPerPage() {
-  const { laranote_per_page } = await chrome.storage.sync.get({ laranote_per_page: 10 });
+  const { laranote_per_page } = await chrome.storage.sync.get({ laranote_per_page: 5 });
   let n = parseInt(laranote_per_page, 10);
   if (isNaN(n) || n < 5) n = 5;
   if (n > 50) n = 50;
