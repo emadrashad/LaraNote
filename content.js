@@ -37,6 +37,50 @@ const arabicFontCSS = `
     font-size: 12px;
     font-weight: 500;
   }
+
+  /* Remove underline on hover for toolbar buttons */
+  .yh-toolbar button {
+    text-decoration: none !important;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 6px 12px;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  .yh-toolbar button:hover,
+  .yh-toolbar button:focus {
+    text-decoration: none !important;
+    outline: none;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Additional hover state cleanup */
+  .yh-toolbar button::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Ensure toolbar container doesn't inherit unwanted styles */
+  .yh-toolbar {
+    all: initial;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: absolute;
+    z-index: 10000;
+  }
 `;
 
 // Inject Arabic font CSS
@@ -49,26 +93,7 @@ function injectArabicFontCSS() {
   document.head.appendChild(style);
 }
 
-// Apply Arabic font based on language
-function applyArabicFont() {
-  chrome.storage.local.get(['lang']).then(result => {
-    const lang = result.lang || 'en';
-    if (lang === 'ar') {
-      document.documentElement.lang = 'ar';
-      document.documentElement.dir = 'rtl';
-    } else {
-      document.documentElement.lang = lang;
-      document.documentElement.dir = 'ltr';
-    }
-  });
-}
-
-// Listen for language changes
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local' && changes.lang) {
-    applyArabicFont();
-  }
-});
+// Removed conflicting applyArabicFont function - now handled by applyToolbarLang
 
 const AR = { highlight: "تظليل", note: "ملاحظة", copy: "نسخ", remove: "إزالة", saved: "تم الحفظ", addNotePlaceholder: "اكتب ملاحظتك هنا...", notes: "ملاحظات", cancel: "إلغاء", save: "حفظ" };
 const KEY_PREFIX = "yh_notes_v1::"; 
@@ -77,7 +102,7 @@ let toolbarEl = null, notePopEl = null, currentRange = null;
 
 // Initialize Arabic font support
 injectArabicFontCSS();
-applyArabicFont();
+// applyArabicFont() removed - now handled by applyToolbarLang
 
 function scrollToHighlightById(id) {
   const el = document.querySelector(`.yh-highlight[data-yh-id="${id}"]`);
@@ -491,6 +516,10 @@ function applyToolbarLang() {
     chrome.storage.sync.get({ laranote_lang: "en" }, ({ laranote_lang }) => {
       const T = LANG_MAP[laranote_lang] || LANG_MAP.en;
       const dir = laranote_lang === "ar" ? "rtl" : "ltr";
+      
+      // Set lang attribute on document element for CSS selectors
+      document.documentElement.lang = laranote_lang;
+      document.documentElement.dir = dir;
       
       document.querySelectorAll(".yh-toolbar").forEach(tb => tb.setAttribute("dir", dir));
       
