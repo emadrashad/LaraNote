@@ -437,6 +437,23 @@ button:hover {
   font-size: 11px;
   line-height: 18px;
   border: 1px solid;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge-free {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border-color: #047857;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.badge-free:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669, #047857);
 }
 
 /* Dark theme */
@@ -454,6 +471,18 @@ button:hover {
     background: #0b1424;
     color: #cfe6ff;
     border-color: #20314d
+  }
+
+  .badge-free {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #ffffff;
+    border-color: #065f46;
+    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.4);
+  }
+
+  .badge-free:hover {
+    box-shadow: 0 4px 8px rgba(5, 150, 105, 0.5);
+    background: linear-gradient(135deg, #047857, #065f46);
   }
 
   footer a {
@@ -481,6 +510,18 @@ button:hover {
     background: #f3f4f6;
     color: #111827;
     border-color: #e5e7eb
+  }
+
+  .badge-free {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    border-color: #047857;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  }
+
+  .badge-free:hover {
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669, #047857);
   }
 
   footer a {
