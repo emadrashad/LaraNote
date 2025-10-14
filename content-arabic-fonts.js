@@ -11,50 +11,51 @@ const arabicFontCSS = `
   }
   
   /* Arabic Font for Toolbar and Notes */
-  [lang="ar"] .yh-toolbar,
-  [lang="ar"] .yh-toolbar *,
-  [lang="ar"] .yh-note-pop,
-  [lang="ar"] .yh-note-pop *,
-  [lang="ar"] .yh-note-item,
-  [lang="ar"] .yh-badge,
-  [lang="ar"] .meta {
+  .yh-toolbar[lang="ar"],
+  .yh-toolbar[lang="ar"] *,
+  .yh-note-pop[lang="ar"],
+  .yh-note-pop[lang="ar"] *,
+  .yh-note-item[lang="ar"],
+  .yh-highlight[lang="ar"],
+  .yh-badge[lang="ar"],
+  .meta[lang="ar"] {
     font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
   }
 
-  /* Exclude note content and header text from Arabic font - MORE SPECIFIC */
-  body[lang="ar"] .note,
-  body[lang="ar"] header .tit p,
-  body[lang="ar"] .note[dir="auto"],
-  body[lang="ar"] .url,
-  html[lang="ar"] body .note,
-  html[lang="ar"] body header .tit p,
-  html[lang="ar"] body .url {
+  /* Exclude note content and header text from Arabic font - TARGETED APPROACH */
+  .yh-note-pop[lang="ar"] .note,
+  .yh-note-pop[lang="ar"] header .tit p,
+  .yh-note-pop[lang="ar"] .note[dir="auto"],
+  .yh-note-pop[lang="ar"] .url,
+  .yh-toolbar[lang="ar"] .note,
+  .yh-toolbar[lang="ar"] header .tit p,
+  .yh-toolbar[lang="ar"] .url {
     font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
   }
   
   /* Enhanced Arabic Typography */
-  [lang="ar"] .yh-toolbar {
+  .yh-toolbar[lang="ar"] {
     font-weight: 500;
     letter-spacing: 0.5px;
   }
   
-  [lang="ar"] .yh-note-pop {
+  .yh-note-pop[lang="ar"] {
     font-weight: 400;
     line-height: 1.6;
   }
   
-  [lang="ar"] .yh-note-pop textarea {
+  .yh-note-pop[lang="ar"] textarea {
     font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
     font-weight: 400;
     line-height: 1.5;
   }
   
-  [lang="ar"] .yh-note-item {
+  .yh-note-item[lang="ar"] {
     font-weight: 400;
     line-height: 1.5;
   }
   
-  [lang="ar"] .yh-badge {
+  .yh-badge[lang="ar"] {
     font-weight: 500;
     font-size: 11px;
   }
@@ -89,7 +90,11 @@ function injectArabicFontCSS() {
 // Function to apply Arabic font based on language
 function applyArabicFont(lang) {
   if (lang === 'ar') {
-    document.documentElement.setAttribute('lang', 'ar');
+    // Apply lang and dir attributes only to LaraNote elements, not the entire document
+    document.querySelectorAll('.yh-toolbar, .yh-note-pop, .yh-highlight, .yh-badge, .meta').forEach(el => {
+      el.setAttribute('lang', 'ar');
+      el.setAttribute('dir', 'rtl');
+    });
     document.body.classList.add('arabic-font-loaded');
     document.body.classList.remove('arabic-font-loading');
     
@@ -98,7 +103,11 @@ function applyArabicFont(lang) {
       el.classList.add('arabic-font-loaded');
     });
   } else {
-    document.documentElement.setAttribute('lang', 'en');
+    // Remove lang and dir attributes from LaraNote elements
+    document.querySelectorAll('.yh-toolbar, .yh-note-pop, .yh-highlight, .yh-badge, .meta').forEach(el => {
+      el.removeAttribute('lang');
+      el.removeAttribute('dir');
+    });
     document.body.classList.remove('arabic-font-loaded');
     
     document.querySelectorAll('.yh-toolbar, .yh-note-pop').forEach(el => {

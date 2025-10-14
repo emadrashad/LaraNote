@@ -84,8 +84,8 @@
 }
 
 /* Settings Popup Arabic Font */
-[lang="ar"] .settings-popup,
-[lang="ar"] .settings-popup * {
+.settings-panel[lang="ar"],
+.settings-panel[lang="ar"] * {
   font-family: 'Playpen Sans Arabic', 'Segoe UI', 'Arial', sans-serif !important;
 }
 

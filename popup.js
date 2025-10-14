@@ -367,9 +367,17 @@ async function saveSettings(e) {
     document.documentElement.setAttribute('lang', 'ar');
     document.body.classList.add('arabic-font-loaded');
     document.body.classList.remove('arabic-font-loading');
+    // Add lang attribute to specific popup elements for consistency
+    document.querySelectorAll('header, main, footer, .settings-panel').forEach(el => {
+      el.setAttribute('lang', 'ar');
+    });
   } else {
     document.documentElement.setAttribute('lang', 'en');
     document.body.classList.remove('arabic-font-loaded');
+    // Remove lang attribute from specific popup elements
+    document.querySelectorAll('header, main, footer, .settings-panel').forEach(el => {
+      el.removeAttribute('lang');
+    });
   }
   
   // Update translations

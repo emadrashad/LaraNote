@@ -10,8 +10,8 @@ const arabicFontCSS = `
     font-style: normal;
   }
 
-  [lang="ar"] .yh-toolbar,
-  [lang="ar"] .yh-note-pop,
+  .yh-toolbar[lang="ar"],
+  .yh-note-pop[lang="ar"],
   [lang="ar"] .yh-badge,
   [lang="ar"] .meta {
     font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
@@ -28,23 +28,23 @@ const arabicFontCSS = `
     font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
   }
 
-  [lang="ar"] .yh-toolbar {
+  .yh-toolbar[lang="ar"] {
     font-size: 14px;
     line-height: 1.4;
   }
 
-  [lang="ar"] .yh-note-pop {
+  .yh-note-pop[lang="ar"] {
     font-size: 14px;
     line-height: 1.5;
   }
 
-  [lang="ar"] .yh-note-pop textarea {
+  .yh-note-pop[lang="ar"] textarea {
     font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
     font-size: 14px;
     line-height: 1.5;
   }
 
-  [lang="ar"] .yh-badge {
+  .yh-badge[lang="ar"] {
     font-size: 12px;
     font-weight: 500;
   }
@@ -528,11 +528,23 @@ function applyToolbarLang() {
       const T = LANG_MAP[laranote_lang] || LANG_MAP.en;
       const dir = laranote_lang === "ar" ? "rtl" : "ltr";
       
-      // Set lang attribute on document element for CSS selectors
-      document.documentElement.lang = laranote_lang;
-      document.documentElement.dir = dir;
+      // Only apply direction to LaraNote elements, not the entire document
       
-      document.querySelectorAll(".yh-toolbar").forEach(tb => tb.setAttribute("dir", dir));
+      // Apply lang and dir attributes to LaraNote-specific elements
+      document.querySelectorAll(".yh-toolbar").forEach(tb => {
+        tb.setAttribute("lang", laranote_lang);
+        tb.setAttribute("dir", dir);
+      });
+      
+      document.querySelectorAll(".yh-note-pop").forEach(np => {
+        np.setAttribute("lang", laranote_lang);
+        np.setAttribute("dir", dir);
+      });
+      
+      document.querySelectorAll(".yh-highlight").forEach(hl => {
+        hl.setAttribute("lang", laranote_lang);
+        hl.setAttribute("dir", dir);
+      });
       
       document.querySelectorAll('[data-act]').forEach(el => {
         const act = el.getAttribute('data-act');
