@@ -152,13 +152,67 @@ function createToolbar() {
 function showToolbarAt(x, y) { const t = createToolbar(); t.style.left = x + "px"; t.style.top = y + "px"; t.style.display = "flex"; }
 function hideToolbar() { if (toolbarEl) toolbarEl.style.display = "none"; }
 function makeId() { return "yh_" + Math.random().toString(36).slice(2, 9); }
-function wrapRangeWithSpan(range, id) {
-  const span = document.createElement("span"); span.className = "yh-highlight"; span.dataset.yhId = id;
-  try { range.surroundContents(span); return span; } catch (e) {
+async function wrapRangeWithSpan(range, id) {
+  // Get the current language setting first
+  let lang = 'en';
+  let dir = 'ltr';
+  
+  try {
+    // Use await to get the language synchronously
+    const result = await chrome.storage.sync.get({ laranote_lang: "en" });
+    lang = result.laranote_lang;
+    
+    // Detect the actual language of the selected text
+    const selectedText = range.toString();
+    
+    // More robust Arabic detection - check for any Arabic Unicode blocks
+    const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(selectedText);
+    
+    // Also check if the text is primarily Latin/English
+    const hasLatin = /[a-zA-Z]/.test(selectedText);
+    const latinRatio = hasLatin ? (selectedText.match(/[a-zA-Z]/g) || []).length / selectedText.length : 0;
+    
+    
+    // Apply direction based on text content, not extension language
+    if (hasArabic && !hasLatin) {
+      // Pure Arabic text
+      dir = "rtl";
+      lang = "ar";
+    } else if (hasArabic && latinRatio < 0.5) {
+      // Mixed text but more Arabic than Latin
+      dir = "rtl";
+      lang = "ar";
+    } else if (hasLatin || selectedText.match(/^[\s\w\.,!?;:'"-]+$/)) {
+      // English/Latin text or text with mostly Latin characters and punctuation
+      dir = "ltr";
+      lang = "en";
+    } else {
+      // Default to extension language for ambiguous cases
+      dir = lang === "ar" ? "rtl" : "ltr";
+    }
+    
+   
+  } catch (e) {
+    // Fallback to LTR if chrome.storage is not available
+    dir = "ltr";
+    lang = "en";
+  }
+  
+  const span = document.createElement("span"); 
+  span.className = "yh-highlight"; 
+  span.dataset.yhId = id;
+  span.setAttribute("lang", lang);
+  span.setAttribute("dir", dir);
+  
+  try { 
+    range.surroundContents(span); 
+    return span; 
+  } catch (e) {
     const walker = document.createTreeWalker(range.commonAncestorContainer, NodeFilter.SHOW_TEXT);
     const toWrap = []; 
     while (walker.nextNode()) {
-      const tn = walker.currentNode; if (!tn.nodeValue || !tn.nodeValue.trim()) continue;
+      const tn = walker.currentNode; 
+      if (!tn.nodeValue || !tn.nodeValue.trim()) continue;
       if (range.intersectsNode && !range.intersectsNode(tn)) continue;
       
       let s = 0, e2 = tn.nodeValue.length; 
@@ -170,15 +224,31 @@ function wrapRangeWithSpan(range, id) {
     
     let first = null; 
     toWrap.forEach(({ tn, startOffset, endOffset }) => {
-      const before = tn.splitText(startOffset); 
-      const after = before.splitText(endOffset - startOffset);
+      // Skip if the text node no longer exists or has been modified
+      if (!tn.parentNode || !tn.nodeValue) return;
+      
+      // Ensure the offsets are valid
+      const textLength = tn.nodeValue.length;
+      if (startOffset >= textLength || endOffset > textLength || startOffset >= endOffset) return;
+      
+      // Split the text node at the start offset
+      const middleText = tn.splitText(startOffset);
+      // Split the middle text at the end offset to isolate the highlighted portion
+      const afterText = middleText.splitText(endOffset - startOffset);
+      
+      // Ensure the middle text node still exists before wrapping
+      if (!middleText.parentNode) return;
       
       const wrap = document.createElement("span"); 
       wrap.className = "yh-highlight"; 
-      wrap.dataset.yhId = id; 
+      wrap.dataset.yhId = id;
+      wrap.setAttribute("lang", lang);
+      wrap.setAttribute("dir", dir);
       
-      before.parentNode.replaceChild(wrap, before); 
-      wrap.appendChild(before); 
+      // Replace the middle text node with the wrapper
+      middleText.parentNode.replaceChild(wrap, middleText); 
+      // Move the middle text into the wrapper
+      wrap.appendChild(middleText); 
       if (!first) first = wrap;
     });
     return first;
@@ -254,12 +324,23 @@ function getNodeFromXPath(xpathString) {
 
 function getDOMAnchor(range) {
   if (!range || range.collapsed) return null;
+  
+  // Get the text content, handling Arabic text properly
+  let exactText = range.toString();
+  
+  // For Arabic text, we need to handle it more carefully
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(exactText);
+  if (hasArabic) {
+    // For Arabic text, we might need to normalize it to preserve proper ordering
+    exactText = exactText.normalize('NFC');
+  }
+  
   return {
     startContainerXPath: getUniqueXPath(range.startContainer),
     startOffset: range.startOffset,
     endContainerXPath: getUniqueXPath(range.endContainer),
     endOffset: range.endOffset,
-    exact: range.toString(), 
+    exact: exactText, 
   };
 }
 
@@ -293,7 +374,7 @@ async function onToolbarClick(e) {
 
   if (action === "highlight") { 
     const id = makeId(); 
-    const el = wrapRangeWithSpan(currentRange, id); 
+    const el = await wrapRangeWithSpan(currentRange, id); 
     if (el) { 
       await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
     } 
@@ -307,7 +388,7 @@ async function onToolbarClick(e) {
   }
   if (action === "note") { 
     const id = makeId(); 
-    const el = wrapRangeWithSpan(currentRange, id); 
+    const el = await wrapRangeWithSpan(currentRange, id); 
     if (el) { 
       showNotePopup(el, id, text, anchor); 
     } 
@@ -403,7 +484,23 @@ function escapeHtml(s) { return s.replace(/[&<>"'`=\/]/g, c => ({ "&": "&amp;", 
 
 function ln_norm(s) {
   if (!s) return "";
-  return s.normalize('NFC').replace(/\s+/g, ' ').replace(/[\u200f\u200e]/g, '').trim(); 
+  
+  // Check if text contains Arabic characters
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(s);
+  
+  // Normalize the text
+  let normalized = s.normalize('NFC').replace(/\s+/g, ' ').trim();
+  
+  // For Arabic text, be more careful with direction control characters
+  if (hasArabic) {
+    // Keep RTL direction for Arabic text, but clean up direction markers
+    normalized = normalized.replace(/[\u200e]/g, ''); // Remove LTR marks but keep RTL marks for Arabic
+  } else {
+    // For non-Arabic text, remove all direction control characters
+    normalized = normalized.replace(/[\u200f\u200e]/g, '');
+  }
+  
+  return normalized; 
 }
 
 function ln_findQuoteRangeNormalized(q) {
@@ -480,7 +577,7 @@ async function ln_applyAllFromStorage() {
       }
       
       if (range) {
-        const span = wrapRangeWithSpan(range, rec.id); 
+        const span = await wrapRangeWithSpan(range, rec.id); 
         if (span && rec.note) {
            addPin(span);
         }
@@ -508,7 +605,7 @@ async function ln_tryReanchorFromStorage(id) {
     
     if (!range) return;
     
-    const span = wrapRangeWithSpan(range, id);
+    const span = await wrapRangeWithSpan(range, id);
     if (span) {
        span.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -530,7 +627,7 @@ function applyToolbarLang() {
       
       // Only apply direction to LaraNote elements, not the entire document
       
-      // Apply lang and dir attributes to LaraNote-specific elements
+      // Apply lang and dir attributes to LaraNote UI elements only
       document.querySelectorAll(".yh-toolbar").forEach(tb => {
         tb.setAttribute("lang", laranote_lang);
         tb.setAttribute("dir", dir);
@@ -541,10 +638,8 @@ function applyToolbarLang() {
         np.setAttribute("dir", dir);
       });
       
-      document.querySelectorAll(".yh-highlight").forEach(hl => {
-        hl.setAttribute("lang", laranote_lang);
-        hl.setAttribute("dir", dir);
-      });
+      // DO NOT override highlight language - they use text-based detection in wrapRangeWithSpan
+      // Only update highlight text content for toolbar buttons, not lang/dir attributes
       
       document.querySelectorAll('[data-act]').forEach(el => {
         const act = el.getAttribute('data-act');

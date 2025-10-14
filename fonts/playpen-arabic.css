@@ -80,7 +80,7 @@
 /* Arabic Button Text */
 [lang="ar"] button {
   font-weight: 500;
-  letter-spacing: 0.5px; /* Slight letter spacing for Arabic */
+  /* letter-spacing removed to prevent spacing issues with highlighted text */
 }
 
 /* Settings Popup Arabic Font */

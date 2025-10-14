@@ -19,8 +19,8 @@
 .yh-highlight{
   background: #facc15 !important;
   color: #111827 !important;
-  padding: 0 2px;
-  border-radius: 3px;
+  padding: 0 1px;
+  border-radius: 2px;
   box-decoration-break: clone;
 }
 

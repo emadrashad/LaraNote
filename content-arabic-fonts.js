@@ -36,7 +36,7 @@ const arabicFontCSS = `
   /* Enhanced Arabic Typography */
   .yh-toolbar[lang="ar"] {
     font-weight: 500;
-    letter-spacing: 0.5px;
+    /* letter-spacing removed to prevent spacing issues with highlighted text */
   }
   
   .yh-note-pop[lang="ar"] {
