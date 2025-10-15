@@ -396,8 +396,19 @@ async function saveSettings(e) {
 // Export functionality
 async function exportData() {
   try {
-    const data = await chrome.storage.local.get(['laranote_items']);
-    const json = JSON.stringify(data.laranote_items || [], null, 2);
+    // Get all data from storage
+    const allData = await chrome.storage.local.get(null);
+    const exportData = {};
+    
+    // Collect all highlights with KEY_PREFIX
+    for (const [key, value] of Object.entries(allData)) {
+      if (key.startsWith(KEY_PREFIX)) {
+        const url = key.replace(KEY_PREFIX, '');
+        exportData[url] = value;
+      }
+    }
+    
+    const json = JSON.stringify(exportData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
