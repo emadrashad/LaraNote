@@ -429,6 +429,16 @@ button:hover {
   background: var(--bg-secondary);
 }
 
+.settings-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--button-bg);
+}
+
+.settings-button:disabled:hover {
+  background: var(--button-bg);
+}
+
 .settings-footer {
   padding: 16px 20px;
   border-top: 1px solid var(--border);

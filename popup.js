@@ -617,14 +617,14 @@ async function hasAnyNotes() {
   }
 }
 
-// Update export button visibility based on count
+// Update export button state (enable/disable based on items)
 async function updateExportButtonState() {
   try {
     const settingsExport = document.getElementById('settings-export');
     if (!settingsExport) return;
     
     const hasItems = await hasAnyNotes();
-    settingsExport.style.display = hasItems ? 'block' : 'none';
+    settingsExport.disabled = !hasItems;
   } catch (err) {
     return;
   }
