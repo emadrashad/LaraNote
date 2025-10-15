@@ -282,6 +282,9 @@ function showSettings() {
   settingsPopup.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   
+  // Update export button state based on items count
+  updateExportButtonState();
+  
   // Add a small delay to prevent immediate mouse events
   setTimeout(() => {
     settingsPopup.style.pointerEvents = 'auto';
@@ -292,11 +295,6 @@ function showSettings() {
       delete settingsPopup.dataset.preventHide;
     }, 500);
   }, 50);
-  
-  // Check if save button exists after showing
-  setTimeout(() => {
-    const saveBtn = document.getElementById('settings-save');
-  }, 200);
 }
   
 // Hide settings popup
@@ -421,7 +419,7 @@ async function exportData() {
       }, 1200);
     }
   } catch (err) {
-   
+    // Export error handled silently
   }
 }
   
@@ -472,25 +470,6 @@ function setupSaveButton() {
       e.stopPropagation();
       saveSettings(e);
     });
-
-  } else {
-   
-    const allSettingsElements = document.querySelectorAll('[id^="settings"]');
-    allSettingsElements.forEach(el => console.log('Found:', el.id));
-    
-    // Retry after a short delay
-    setTimeout(() => {
-     
-      const retrySaveButton = document.getElementById('settings-save');
-      if (retrySaveButton) {
-        retrySaveButton.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          saveSettings(e);
-        });
-       
-      }
-    }, 500);
   }
 }
 
@@ -500,7 +479,6 @@ setupSaveButton();
 // Fallback: Use event delegation for save button clicks
 document.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'settings-save') {
-  
     e.preventDefault();
     e.stopPropagation();
     saveSettings(e);
@@ -509,3 +487,39 @@ document.addEventListener('click', (e) => {
 
 start();
 initSettings();
+
+// Simple function to count highlights/highlights with notes
+async function hasAnyNotes() {
+  try {
+    const data = await chrome.storage.local.get(null);
+    const keys = Object.keys(data);
+    
+    // Count items with KEY_PREFIX (highlights)
+    let count = 0;
+    for (const key of keys) {
+      if (key.startsWith(KEY_PREFIX)) {
+        const items = data[key];
+        if (Array.isArray(items)) {
+          count += items.length;
+        }
+      }
+    }
+    
+    return count > 0;
+  } catch (err) {
+    return false;
+  }
+}
+
+// Update export button visibility based on count
+async function updateExportButtonState() {
+  try {
+    const settingsExport = document.getElementById('settings-export');
+    if (!settingsExport) return;
+    
+    const hasItems = await hasAnyNotes();
+    settingsExport.style.display = hasItems ? 'block' : 'none';
+  } catch (err) {
+    return;
+  }
+}
