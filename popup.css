@@ -439,6 +439,47 @@ button:hover {
   background: var(--button-bg);
 }
 
+/* ===== DATA MANAGEMENT SECTION ===== */
+.data-management {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: "💾";
+  font-size: 16px;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.button-group .settings-button {
+  flex: 1;
+  margin: 0;
+}
+
+.data-management .settings-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
 .settings-footer {
   padding: 16px 20px;
   border-top: 1px solid var(--border);

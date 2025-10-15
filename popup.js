@@ -21,6 +21,8 @@ const I18N = {
     language_hint: "لغة الواجهة.",
     export_json: "تصدير JSON",
     import_json: "استيراد JSON",
+    data_management: "إدارة البيانات",
+    data_management_hint: "نسخ احتياطي واستعادة التمييزات الخاصة بك عبر الأجهزة.",
     save_settings: "حفظ الإعدادات"
   },
   en: {
@@ -40,6 +42,8 @@ const I18N = {
     language_hint: "Interface language.",
     export_json: "Export JSON",
     import_json: "Import JSON",
+    data_management: "Data Management",
+    data_management_hint: "Backup and restore your highlights across devices.",
     save_settings: "Save Settings"
   }
 };
