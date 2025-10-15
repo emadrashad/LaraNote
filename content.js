@@ -1185,8 +1185,38 @@ async function debugHighlight(id) {
 
 // --- Event Listeners and Initial Execution Flow ---
 
+// Function to check if toolbar should be shown
+async function shouldShowToolbar() {
+  try {
+    const { laranote_show_toolbar } = await chrome.storage.sync.get({ laranote_show_toolbar: true });
+    return laranote_show_toolbar;
+  } catch (e) {
+    return true; // Default to showing toolbar if there's an error
+  }
+}
+
 // 1. Setup Toolbar Listeners
-document.addEventListener("mouseup", () => { setTimeout(() => { const r = getSelectionRangeSafe(); if (!r) { hideToolbar(); currentRange = null; return; } currentRange = r; const pt = selectionClientPoint(r); showToolbarAt(pt.x, pt.y); }, 0); });
+document.addEventListener("mouseup", async () => { 
+  setTimeout(async () => { 
+    const r = getSelectionRangeSafe(); 
+    if (!r) { 
+      hideToolbar(); 
+      currentRange = null; 
+      return; 
+    } 
+    
+    // Check if toolbar should be shown based on settings
+    const showToolbar = await shouldShowToolbar();
+    if (!showToolbar) {
+      hideToolbar();
+      return;
+    }
+    
+    currentRange = r; 
+    const pt = selectionClientPoint(r); 
+    showToolbarAt(pt.x, pt.y); 
+  }, 0); 
+});
 document.addEventListener("mousedown", e => { if (toolbarEl && !toolbarEl.contains(e.target)) hideToolbar(); if (notePopEl && !notePopEl.contains(e.target)) hideNotePopup(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") { hideToolbar(); hideNotePopup(); window.getSelection()?.removeAllRanges(); } });
 
