@@ -20,6 +20,7 @@ const I18N = {
     language: "اللغة",
     language_hint: "لغة الواجهة.",
     export_json: "تصدير JSON",
+    import_json: "استيراد JSON",
     save_settings: "حفظ الإعدادات"
   },
   en: {
@@ -38,6 +39,7 @@ const I18N = {
     language: "Language",
     language_hint: "Interface language.",
     export_json: "Export JSON",
+    import_json: "Import JSON",
     save_settings: "Save Settings"
   }
 };
@@ -192,7 +194,7 @@ async function start() {
 // Export functionality moved to settings popup
 
 // Global variables for settings
-let settingsBtn, settingsPopup, settingsBack, settingsSave, settingsExport, settingsStatus;
+let settingsBtn, settingsPopup, settingsBack, settingsSave, settingsExport, settingsImport, settingsImportFile, settingsStatus;
 let isSaving = false;
 
 // Global variables for main functionality
@@ -221,6 +223,8 @@ function initSettingsInternal() {
   settingsBack = document.getElementById('settings-back');
   settingsSave = document.getElementById('settings-save');
   settingsExport = document.getElementById('settings-export');
+  settingsImport = document.getElementById('settings-import');
+  settingsImportFile = document.getElementById('settings-import-file');
   settingsStatus = document.getElementById('settings-status');
   
   // Load current settings
@@ -433,6 +437,61 @@ async function exportData() {
     // Export error handled silently
   }
 }
+
+// Import functionality
+async function importData(file) {
+  try {
+    const text = await file.text();
+    const importData = JSON.parse(text);
+    
+    // Validate the import data structure
+    if (typeof importData !== 'object' || !importData) {
+      throw new Error('Invalid JSON format');
+    }
+    
+    // Import each URL's highlights
+    let importedCount = 0;
+    for (const [url, highlights] of Object.entries(importData)) {
+      if (Array.isArray(highlights)) {
+        const storageKey = KEY_PREFIX + url;
+        await chrome.storage.local.set({ [storageKey]: highlights });
+        importedCount += highlights.length;
+      }
+    }
+    
+    // Show success message
+    const T = I18N[__lang] || I18N[DEFAULT_LANG];
+    if (settingsStatus) {
+      settingsStatus.textContent = __lang === 'ar' ? `تم استيراد ${importedCount} عنصر!` : `Imported ${importedCount} items!`;
+      settingsStatus.style.color = '#28a745'; // Green color for success
+      setTimeout(() => {
+        if (settingsStatus) {
+          settingsStatus.textContent = '';
+          settingsStatus.style.color = '';
+        }
+      }, 2000);
+    }
+    
+    // Refresh the main view and update export button
+    __allItems = await loadAll();
+    rerender();
+    updateExportButtonState();
+    
+  } catch (err) {
+    // Show error message
+    const T = I18N[__lang] || I18N[DEFAULT_LANG];
+    if (settingsStatus) {
+      settingsStatus.textContent = __lang === 'ar' ? 'فشل الاستيراد!' : 'Import failed!';
+      settingsStatus.style.color = '#dc3545'; // Red color for error
+      setTimeout(() => {
+        if (settingsStatus) {
+          settingsStatus.textContent = '';
+          settingsStatus.style.color = '';
+        }
+      }, 2000);
+    }
+  }
+}
   
 // Event listeners setup function
 function setupSettingsEventListeners() {
@@ -449,6 +508,21 @@ function setupSettingsEventListeners() {
   if (settingsExport) {
     settingsExport.addEventListener('click', exportData);
 
+  }
+  
+  if (settingsImport) {
+    settingsImport.addEventListener('click', () => {
+      settingsImportFile.click();
+    });
+  }
+  
+  if (settingsImportFile) {
+    settingsImportFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        importData(file);
+      }
+    });
   }
   
   // Close settings when clicking outside
