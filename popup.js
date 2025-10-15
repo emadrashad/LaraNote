@@ -22,7 +22,7 @@ const I18N = {
     export_json: "تصدير JSON",
     import_json: "استيراد JSON",
     data_management: "إدارة البيانات",
-    data_management_hint: "نسخ احتياطي واستعادة الملاحظات الخاصة بك عبر الأجهزة.",
+    data_management_hint: "نسخ احتياطي واستعادة الملاحظات والتمييزات الخاصة بك عبر الأجهزة.",
     save_settings: "حفظ الإعدادات"
   },
   en: {
@@ -43,7 +43,7 @@ const I18N = {
     export_json: "Export JSON",
     import_json: "Import JSON",
     data_management: "Data Management",
-    data_management_hint: "Backup and restore your highlights across devices.",
+    data_management_hint: "Backup and restore your notes and highlights across devices.",
     save_settings: "Save Settings"
   }
 };
