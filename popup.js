@@ -449,13 +449,34 @@ async function importData(file) {
       throw new Error('Invalid JSON format');
     }
     
-    // Import each URL's highlights
+    // Import each URL's highlights - merge with existing data
     let importedCount = 0;
     for (const [url, highlights] of Object.entries(importData)) {
       if (Array.isArray(highlights)) {
         const storageKey = KEY_PREFIX + url;
-        await chrome.storage.local.set({ [storageKey]: highlights });
-        importedCount += highlights.length;
+        
+        // Get existing data for this URL
+        const existingData = await chrome.storage.local.get(storageKey);
+        const existingHighlights = existingData[storageKey] || [];
+        
+        // Merge new highlights with existing ones (avoid duplicates)
+        const mergedHighlights = [...existingHighlights];
+        
+        for (const newHighlight of highlights) {
+          // Check if this highlight already exists (by text content and position)
+          const exists = existingHighlights.some(existing => 
+            existing.text === newHighlight.text && 
+            existing.startOffset === newHighlight.startOffset &&
+            existing.endOffset === newHighlight.endOffset
+          );
+          
+          if (!exists) {
+            mergedHighlights.push(newHighlight);
+            importedCount++;
+          }
+        }
+        
+        await chrome.storage.local.set({ [storageKey]: mergedHighlights });
       }
     }
     
