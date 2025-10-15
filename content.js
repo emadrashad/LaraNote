@@ -316,8 +316,30 @@ function getNodeFromXPath(xpathString) {
   let path = xpathString.startsWith('/') ? xpathString : '//' + xpathString;
   try {
     const result = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    return result.singleNodeValue;
+    let node = result.singleNodeValue;
+    
+    // If we can't find the exact text node, try to find a fallback
+    if (!node && xpathString.includes('/text()[')) {
+      // Try to find the parent element instead
+      const parentPath = xpathString.replace(/\/text\(\)\[\d+\]/g, '');
+      const parentResult = document.evaluate(parentPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      const parent = parentResult.singleNodeValue;
+      
+      if (parent && parent.firstChild) {
+        // Return the first text node child as fallback
+        for (let child = parent.firstChild; child; child = child.nextSibling) {
+          if (child.nodeType === Node.TEXT_NODE) {
+            return child;
+          }
+        }
+        // If no text node found, return the parent element (will be handled by range logic)
+        return parent;
+      }
+    }
+    
+    return node;
   } catch (e) {
+    console.warn('LaraNote: XPath evaluation failed for:', xpathString, e);
     return null;
   }
 }
@@ -354,10 +376,23 @@ function ln_recreateRangeFromAnchor(anchor) {
 
   try {
     const range = document.createRange();
-    range.setStart(startNode, anchor.startOffset || 0);
-    range.setEnd(endNode, anchor.endOffset || 0);
+    range.setStart(startNode, Math.min(anchor.startOffset || 0, startNode.textContent?.length || 0));
+    range.setEnd(endNode, Math.min(anchor.endOffset || 0, endNode.textContent?.length || 0));
     return range;
   } catch (e) {
+    // Fallback: if start and end are in the same parent but different text nodes,
+    // try to create a range from the start of the first to the end of the last
+    try {
+      if (startNode.parentNode === endNode.parentNode && startNode !== endNode) {
+        const range = document.createRange();
+        range.setStart(startNode, Math.min(anchor.startOffset || 0, startNode.textContent?.length || 0));
+        range.setEnd(endNode, Math.min(anchor.endOffset || 0, endNode.textContent?.length || 0));
+        return range;
+      }
+    } catch (e2) {
+      // Final fallback: try string-based search
+      return ln_findQuoteRangeNormalized(anchor);
+    }
     return null;
   }
 }
@@ -505,47 +540,296 @@ function ln_norm(s) {
 
 function ln_findQuoteRangeNormalized(q) {
   if (!q || !q.exact) return null;
-  const exact = ln_norm(q.exact);
+  
+  // Enhanced normalization for complex text with embedded scripts/ads
+  const normalizeForSearch = (text) => {
+    let normalized = ln_norm(text);
+    
+    // Remove common ad insertion patterns that might not be in current DOM
+    normalized = normalized.replace(/if\s*\(\s*window\s*&&\s*window\.foxstrike[\s\S]*?}\s*else\s*{[\s\S]*?console\.error\('[\s\S]*?'\);[\s\S]*?}/g, '');
+    normalized = normalized.replace(/window\.foxstrike\.cmd\.push\([\s\S]*?}\);/g, '');
+    normalized = normalized.replace(/Strike\.insertAd\([\s\S]*?\);/g, '');
+    
+    // Remove extra whitespace created by script removal
+    normalized = normalized.replace(/\s+/g, ' ').trim();
+    
+    return normalized;
+  };
+  
+  // Fuzzy matching for partial text matches - now works on text nodes directly
+  const findFuzzyMatchInNodes = (searchText, minMatchRatio = 0.7) => {
+    const words = searchText.split(' ');
+    let bestMatch = { ratio: 0, startNode: null, startOffset: 0, endNode: null, endOffset: 0 };
+    
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+    
+    let node;
+    while (node = walker.nextNode()) {
+      const nodeText = ln_norm(node.nodeValue || '');
+      
+      // Try to find the search text in this node
+      for (let start = 0; start <= nodeText.length - searchText.length + 1; start++) {
+        const substring = nodeText.substring(start, start + searchText.length);
+        const substringWords = substring.split(' ');
+        
+        // Count matching words
+        let matchedWords = 0;
+        for (let i = 0; i < Math.min(words.length, substringWords.length); i++) {
+          if (words[i] && substringWords[i] && words[i] === substringWords[i]) {
+            matchedWords++;
+          }
+        }
+        
+        const ratio = matchedWords / words.length;
+        if (ratio > bestMatch.ratio && ratio >= minMatchRatio) {
+          bestMatch = { 
+            ratio, 
+            startNode: node, 
+            startOffset: start, 
+            endNode: node, 
+            endOffset: start + substring.length 
+          };
+        }
+      }
+    }
+    
+    return bestMatch.ratio >= minMatchRatio ? bestMatch : null;
+  };
+  
+  const exact = normalizeForSearch(q.exact);
   if (!exact) return null;
   
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-  let node; const nodes = []; const parts = [];
-  while ((node = walker.nextNode())) {
-    nodes.push(node);
-    parts.push(ln_norm(node.nodeValue || ''));
-  }
-  const hay = parts.join('');
-  let idx = -1;
-  if (q.prefix) {
-    const p = ln_norm(q.prefix);
-    const pIdx = hay.indexOf(p);
-    if (pIdx >= 0) idx = hay.indexOf(exact, Math.max(0, pIdx + p.length - 1));
-  }
-  if (idx === -1) idx = hay.indexOf(exact);
-  if (idx === -1) return null;
-  const end = idx + exact.length;
+  // ENHANCED APPROACH: Handle multi-node selections first
+  // This addresses the issue where highlights span across multiple text nodes
+  const textNodes = [];
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  );
   
-  let cur = 0;
-  const range = document.createRange();
-  let gotS = false, gotE = false;
-  for (let i = 0; i < nodes.length; i++) {
-    const len = (parts[i] || '').length;
-    const next = cur + len;
-    if (!gotS && idx >= cur && idx <= next) {
-      const raw = (nodes[i].nodeValue || '');
-      const rawOffset = Math.min(raw.length, idx - cur);
-      range.setStart(nodes[i], rawOffset);
-      gotS = true;
+  let node;
+  while (node = walker.nextNode()) {
+    if (node.nodeValue && node.nodeValue.trim().length > 0) {
+      textNodes.push(node);
     }
-    if (!gotE && end >= cur && end <= next) {
-      const raw = (nodes[i].nodeValue || '');
-      const rawOffset = Math.min(raw.length, end - cur);
-      range.setEnd(nodes[i], rawOffset);
-      gotE = true; break;
-    }
-    cur = next;
   }
-  return (gotS && gotE) ? range : null;
+  
+  console.log(`LaraNote: Searching in ${textNodes.length} text nodes for: "${exact.substring(0, 50)}..."`);
+  
+  // Try to find the text by checking combinations of adjacent nodes (for multi-node selections)
+  for (let startIdx = 0; startIdx < textNodes.length; startIdx++) {
+    let combinedText = '';
+    let combinedNodes = [];
+    
+    // Build up text by combining adjacent nodes
+    for (let endIdx = startIdx; endIdx < textNodes.length; endIdx++) {
+      const nodeText = ln_norm(textNodes[endIdx].nodeValue || '');
+      combinedText += (combinedText ? ' ' : '') + nodeText;
+      combinedNodes.push(textNodes[endIdx]);
+      
+      // Check if our exact text is found in the combined text
+      const searchIdx = combinedText.indexOf(exact);
+      if (searchIdx !== -1) {
+        console.log(`LaraNote: Found multi-node match spanning ${combinedNodes.length} nodes (nodes ${startIdx}-${endIdx})!`);
+        console.log(`LaraNote: Combined text length: ${combinedText.length}, search text length: ${exact.length}`);
+        
+        // Calculate the exact positions within the combined text
+        let currentPos = 0;
+        let startNode = null;
+        let endNode = null;
+        let startOffset = 0;
+        let endOffset = 0;
+        
+        for (let i = 0; i < combinedNodes.length; i++) {
+          const nodeText = ln_norm(combinedNodes[i].nodeValue || '');
+          const nodeStart = currentPos;
+          const nodeEnd = currentPos + nodeText.length;
+          
+          // Check if this node contains the start of our match
+          if (!startNode && nodeEnd > searchIdx) {
+            startNode = combinedNodes[i];
+            startOffset = searchIdx - nodeStart;
+          }
+          
+          // Check if this node contains the end of our match
+          if (nodeEnd >= searchIdx + exact.length) {
+            endNode = combinedNodes[i];
+            endOffset = (searchIdx + exact.length) - nodeStart;
+            break;
+          }
+          
+          currentPos = nodeEnd + 1; // +1 for space between nodes
+        }
+        
+        if (startNode && endNode) {
+          try {
+            const range = document.createRange();
+            range.setStart(startNode, Math.min(startOffset, startNode.nodeValue.length));
+            range.setEnd(endNode, Math.min(endOffset, endNode.nodeValue.length));
+            
+            console.log(`LaraNote: Created multi-node range successfully`);
+            return range;
+          } catch (e) {
+            console.warn('LaraNote: Failed to create multi-node range:', e);
+          }
+        }
+      }
+      
+      // Limit the number of nodes we combine to prevent excessive searching
+      // Increased from 5 to 20 to handle longer multi-node selections
+      if (combinedNodes.length > 20) {
+        console.log(`LaraNote: Reached node combination limit (20) at node ${endIdx}, continuing search...`);
+        break;
+      }
+    }
+  }
+  
+  console.log('LaraNote: Multi-node search failed, trying single-node search');
+  
+  // FALLBACK: Try single-node search (existing logic)
+  let foundRange = null;
+  let method = 'exact';
+  
+  // Reset walker for single-node search
+  walker.currentNode = document.body;
+  
+  // 1. Try exact match in individual text nodes
+  while (node = walker.nextNode()) {
+    const nodeText = ln_norm(node.nodeValue || '');
+    const idx = nodeText.indexOf(exact);
+    
+    if (idx !== -1) {
+      // Found exact match in this text node
+      try {
+        const range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + exact.length);
+        foundRange = range;
+        method = 'exact';
+        break;
+      } catch (e) {
+        console.warn('LaraNote: Failed to create range for exact match:', e);
+      }
+    }
+  }
+  
+  // 2. Try fuzzy matching if exact match failed
+  if (!foundRange) {
+    const fuzzyMatch = findFuzzyMatchInNodes(exact, 0.7);
+    if (fuzzyMatch) {
+      try {
+        const range = document.createRange();
+        range.setStart(fuzzyMatch.startNode, fuzzyMatch.startOffset);
+        range.setEnd(fuzzyMatch.endNode, fuzzyMatch.endOffset);
+        foundRange = range;
+        method = 'fuzzy';
+        console.log(`LaraNote: Fuzzy match found with ${Math.round(fuzzyMatch.ratio * 100)}% confidence`);
+      } catch (e) {
+        console.warn('LaraNote: Failed to create range for fuzzy match:', e);
+      }
+    }
+  }
+  
+  // 3. Try partial phrase matching as final fallback
+  if (!foundRange) {
+    const words = exact.split(' ');
+    for (let wordCount = words.length; wordCount >= 3; wordCount--) {
+      for (let start = 0; start <= words.length - wordCount; start++) {
+        const phrase = words.slice(start, start + wordCount).join(' ');
+        
+        // Search for this phrase in text nodes
+        walker.currentNode = document.body; // Reset walker
+        while (node = walker.nextNode()) {
+          const nodeText = ln_norm(node.nodeValue || '');
+          const phraseIdx = nodeText.indexOf(phrase);
+          
+          if (phraseIdx !== -1) {
+            try {
+              const range = document.createRange();
+              range.setStart(node, phraseIdx);
+              range.setEnd(node, phraseIdx + phrase.length);
+              foundRange = range;
+              method = 'partial';
+              console.log(`LaraNote: Partial phrase match found: "${phrase}"`);
+              break;
+            } catch (e) {
+              console.warn('LaraNote: Failed to create range for partial match:', e);
+            }
+          }
+        }
+        if (foundRange) break;
+      }
+      if (foundRange) break;
+    }
+  }
+  
+  if (!foundRange) {
+    console.log('LaraNote: Could not find text in document using any method:', exact.substring(0, 50) + '...');
+    return null;
+  }
+  
+  console.log(`LaraNote: Found text using ${method} method`);
+  return foundRange;
+}
+
+// Helper function to create a DOM range from text positions
+function ln_createRangeFromTextPosition(startPos, endPos) {
+  if (startPos < 0 || endPos <= startPos) return null;
+  
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  );
+  
+  let currentPos = 0;
+  let startNode = null;
+  let endNode = null;
+  let startOffset = 0;
+  let endOffset = 0;
+  
+  let node;
+  while (node = walker.nextNode()) {
+    const nodeLength = (node.nodeValue || '').length;
+    
+    // Find start node
+    if (!startNode && currentPos + nodeLength >= startPos) {
+      startNode = node;
+      startOffset = startPos - currentPos;
+    }
+    
+    // Find end node
+    if (!endNode && currentPos + nodeLength >= endPos) {
+      endNode = node;
+      endOffset = endPos - currentPos;
+      break;
+    }
+    
+    currentPos += nodeLength;
+  }
+  
+  // If we found both nodes, create the range
+  if (startNode && endNode) {
+    try {
+      const range = document.createRange();
+      range.setStart(startNode, Math.min(startOffset, startNode.nodeValue?.length || 0));
+      range.setEnd(endNode, Math.min(endOffset, endNode.nodeValue?.length || 0));
+      return range;
+    } catch (e) {
+      console.warn('LaraNote: Failed to create range from text position:', e);
+      return null;
+    }
+  }
+  
+  return null;
 }
 
 // --- Main Restore and Language Logic ---
@@ -557,33 +841,113 @@ async function ln_applyAllFromStorage() {
     const arr = all[key];
     if (!Array.isArray(arr)) return;
     
+    let successCount = 0;
+    let failCount = 0;
+    
     for (const rec of arr) {
       if (!rec || !rec.id) continue;
-      if (document.querySelector('[data-yh-id="' + rec.id + '"]')) continue;
-      
-      let range = null;
-
-      // 1. PRIMARY: Try XPath/Offset anchoring (NEW, reliable method)
-      if (rec.quote && rec.quote.startContainerXPath) {
-        range = ln_recreateRangeFromAnchor(rec.quote);
+      if (document.querySelector('[data-yh-id="' + rec.id + '"]')) {
+        successCount++;
+        continue;
       }
       
-      // 2. FALLBACK: Fall back to old string-based anchoring (for legacy data)
+      let range = null;
+      let methodUsed = 'none';
+
+      // SPECIAL CASE: For multi-text-node selections (common in Vue.js/Nuxt.js)
+      // Try string-based search FIRST for better reliability
+      if (rec.quote && rec.quote.startContainerXPath && rec.quote.endContainerXPath) {
+        const startPath = rec.quote.startContainerXPath;
+        const endPath = rec.quote.endContainerXPath;
+        
+        // Check if this spans different paragraphs (cross-paragraph selection)
+        const startParaMatch = startPath.match(/\/p\[(\d+)\]/);
+        const endParaMatch = endPath.match(/\/p\[(\d+)\]/);
+        
+        // Check if this spans multiple text nodes within same paragraph
+        const startTextMatch = startPath.match(/\/text\(\)\[(\d+)\]$/);
+        const endTextMatch = endPath.match(/\/text\(\)\[(\d+)\]$/);
+        
+        const isCrossParagraph = startParaMatch && endParaMatch && startParaMatch[1] !== endParaMatch[1];
+        const isMultiTextNode = startTextMatch && endTextMatch && startTextMatch[1] !== endTextMatch[1];
+        
+        // ADDITIONAL CHECK: Even if XPaths point to same text node, verify if the text length
+        // exceeds what's available in the resolved text node (handles split text nodes)
+        let isTextLengthMismatch = false;
+        if (!isCrossParagraph && !isMultiTextNode && rec.quote.exact && rec.quote.endOffset) {
+          try {
+            const testNode = getNodeFromXPath(startPath);
+            if (testNode && testNode.nodeType === Node.TEXT_NODE) {
+              const availableLength = (testNode.nodeValue || '').length;
+              const requiredEndOffset = rec.quote.endOffset;
+              if (requiredEndOffset > availableLength) {
+                isTextLengthMismatch = true;
+                console.log(`LaraNote: Text length mismatch detected for ${rec.id} (needs ${requiredEndOffset}, has ${availableLength}), treating as multi-text-node`);
+              }
+            }
+          } catch (e) {
+            console.warn(`LaraNote: Error checking text length for ${rec.id}:`, e);
+          }
+        }
+        
+        if (isCrossParagraph || isMultiTextNode || isTextLengthMismatch) {
+          // Complex selection - use string search first
+          const selectionType = isCrossParagraph ? 'cross-paragraph' : (isMultiTextNode ? 'multi-text-node' : 'text-length-mismatch');
+          console.log(`LaraNote: Complex selection detected for ${rec.id} (${selectionType}), trying string search first`);
+          if (rec.quote) {
+            range = ln_findQuoteRangeNormalized(rec.quote);
+            if (range) methodUsed = isCrossParagraph ? 'string-cross-para' : (isMultiTextNode ? 'string-multi' : 'string-length-mismatch');
+          }
+          if (!range && rec.text) {
+            range = ln_findQuoteRangeNormalized({ exact: rec.text });
+            if (range) methodUsed = isCrossParagraph ? 'text-cross-para' : (isMultiTextNode ? 'text-multi' : 'text-length-mismatch');
+          }
+        }
+      }
+      
+      // 1. PRIMARY: Try XPath/Offset anchoring (for single text nodes or if multi-node failed)
+      if (!range && rec.quote && rec.quote.startContainerXPath) {
+        range = ln_recreateRangeFromAnchor(rec.quote);
+        if (range) methodUsed = 'xpath';
+      }
+      
+      // 2. FALLBACK: Final string-based anchoring (for legacy data or if XPath failed)
       if (!range && rec.quote) {
         range = ln_findQuoteRangeNormalized(rec.quote); 
+        if (range) methodUsed = 'string-fallback';
       }
       if (!range && rec.text) {
         range = ln_findQuoteRangeNormalized({ exact: rec.text });
+        if (range) methodUsed = 'text-fallback';
       }
       
       if (range) {
-        const span = await wrapRangeWithSpan(range, rec.id); 
-        if (span && rec.note) {
-           addPin(span);
+        try {
+          const span = await wrapRangeWithSpan(range, rec.id); 
+          if (span) {
+            successCount++;
+            if (rec.note) {
+              addPin(span);
+            }
+            console.log(`LaraNote: Restored highlight ${rec.id} using ${methodUsed} method`);
+          } else {
+            failCount++;
+            console.warn(`LaraNote: Failed to wrap range for highlight ${rec.id}`);
+          }
+        } catch (wrapError) {
+          failCount++;
+          console.error(`LaraNote: Error wrapping range for highlight ${rec.id}:`, wrapError);
         }
+      } else {
+        failCount++;
+        console.warn(`LaraNote: Could not recreate range for highlight ${rec.id} - text may have changed`);
       }
     }
-  } catch (e) { console.error("Error applying stored highlights:", e); }
+    
+    console.log(`LaraNote: Restoration complete - ${successCount} successful, ${failCount} failed`);
+  } catch (e) { 
+    console.error("LaraNote: Error applying stored highlights:", e); 
+  }
 }
 
 async function ln_tryReanchorFromStorage(id) {
@@ -596,20 +960,99 @@ async function ln_tryReanchorFromStorage(id) {
     if (!rec || !rec.quote || !rec.quote.exact) return;
 
     let range = null;
-    if (rec.quote.startContainerXPath) {
-      range = ln_recreateRangeFromAnchor(rec.quote);
-    }
-    if (!range) {
-      range = ln_findQuoteRangeNormalized(rec.quote);
+    let methodUsed = 'none';
+
+    // SPECIAL CASE: For multi-text-node selections (common in Vue.js/Nuxt.js)
+    // Try string-based search FIRST for better reliability
+    if (rec.quote && rec.quote.startContainerXPath && rec.quote.endContainerXPath) {
+      const startPath = rec.quote.startContainerXPath;
+      const endPath = rec.quote.endContainerXPath;
+      
+      // Check if this spans different paragraphs (cross-paragraph selection)
+      const startParaMatch = startPath.match(/\/p\[(\d+)\]/);
+      const endParaMatch = endPath.match(/\/p\[(\d+)\]/);
+      
+      // Check if this spans multiple text nodes within same paragraph
+      const startTextMatch = startPath.match(/\/text\(\)\[(\d+)\]$/);
+      const endTextMatch = endPath.match(/\/text\(\)\[(\d+)\]$/);
+      
+      const isCrossParagraph = startParaMatch && endParaMatch && startParaMatch[1] !== endParaMatch[1];
+      const isMultiTextNode = startTextMatch && endTextMatch && startTextMatch[1] !== endTextMatch[1];
+      
+      // ADDITIONAL CHECK: Even if XPaths point to same text node, verify if the text length
+      // exceeds what's available in the resolved text node (handles split text nodes)
+      let isTextLengthMismatch = false;
+      if (!isCrossParagraph && !isMultiTextNode && rec.quote.exact && rec.quote.endOffset) {
+        try {
+          const testNode = getNodeFromXPath(startPath);
+          if (testNode && testNode.nodeType === Node.TEXT_NODE) {
+            const availableLength = (testNode.nodeValue || '').length;
+            const requiredEndOffset = rec.quote.endOffset;
+            if (requiredEndOffset > availableLength) {
+              isTextLengthMismatch = true;
+              console.log(`LaraNote: Text length mismatch detected for ${id} (needs ${requiredEndOffset}, has ${availableLength}), treating as multi-text-node`);
+            }
+          }
+        } catch (e) {
+          console.warn(`LaraNote: Error checking text length for ${id}:`, e);
+        }
+      }
+      
+      if (isCrossParagraph || isMultiTextNode || isTextLengthMismatch) {
+        // Complex selection - use string search first
+        const selectionType = isCrossParagraph ? 'cross-paragraph' : (isMultiTextNode ? 'multi-text-node' : 'text-length-mismatch');
+        console.log(`LaraNote: Complex selection detected for ${id} (${selectionType}), trying string search first`);
+        if (rec.quote) {
+          range = ln_findQuoteRangeNormalized(rec.quote);
+          if (range) methodUsed = isCrossParagraph ? 'string-cross-para' : (isMultiTextNode ? 'string-multi' : 'string-length-mismatch');
+        }
+        if (!range && rec.text) {
+          range = ln_findQuoteRangeNormalized({ exact: rec.text });
+          if (range) methodUsed = isCrossParagraph ? 'text-cross-para' : (isMultiTextNode ? 'text-multi' : 'text-length-mismatch');
+        }
+      }
     }
     
-    if (!range) return;
+    // Try XPath method first (for single text nodes or if multi-node failed)
+    if (!range && rec.quote.startContainerXPath) {
+      range = ln_recreateRangeFromAnchor(rec.quote);
+      if (range) methodUsed = 'xpath';
+    }
+    
+    // Fallback to string-based search (final fallback)
+    if (!range) {
+      range = ln_findQuoteRangeNormalized(rec.quote);
+      if (range) methodUsed = 'string-fallback';
+    }
+    
+    if (!range) {
+      console.warn(`LaraNote: Could not reanchor highlight ${id} - text not found`);
+      return;
+    }
     
     const span = await wrapRangeWithSpan(range, id);
     if (span) {
-       span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      console.log(`LaraNote: Successfully reanchored highlight ${id} using ${methodUsed} method`);
+      
+      // Enhanced scrolling with retry logic
+      setTimeout(() => {
+        try {
+          span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Add visual feedback
+          span.style.transition = 'box-shadow 0.3s ease';
+          span.style.boxShadow = '0 0 0 4px rgba(59,130,246,.45)';
+          setTimeout(() => { 
+            span.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)'; 
+          }, 1200);
+        } catch (scrollError) {
+          console.warn('LaraNote: Scroll failed:', scrollError);
+        }
+      }, 100);
     }
-  } catch (e) { }
+  } catch (e) { 
+    console.error('LaraNote: Error in ln_tryReanchorFromStorage:', e);
+  }
 }
 
 // --- Language Handling (v4.9) ---
@@ -669,6 +1112,77 @@ function applyToolbarLang() {
 }
 
 
+// --- Debug Helper for Troubleshooting Specific Highlights ---
+
+async function debugHighlight(id) {
+  console.log(`=== LaraNote Debug: Investigating highlight ${id} ===`);
+  
+  try {
+    const all = await chrome.storage.local.get(null);
+    const key = PAGE_KEY;
+    const arr = all[key];
+    if (!Array.isArray(arr)) {
+      console.log('No highlights found for this page');
+      return;
+    }
+    
+    const rec = arr.find(r => r.id === id);
+    if (!rec) {
+      console.log(`Highlight ${id} not found in storage`);
+      return;
+    }
+    
+    console.log('Stored record:', rec);
+    
+    if (rec.quote) {
+      console.log('Quote data:', rec.quote);
+      
+      if (rec.quote.startContainerXPath) {
+        console.log('Testing start XPath:', rec.quote.startContainerXPath);
+        const startNode = getNodeFromXPath(rec.quote.startContainerXPath);
+        console.log('Start node found:', startNode);
+        if (startNode) {
+          console.log('Start node content:', startNode.textContent);
+          console.log('Start node type:', startNode.nodeType);
+        }
+      }
+      
+      if (rec.quote.endContainerXPath) {
+        console.log('Testing end XPath:', rec.quote.endContainerXPath);
+        const endNode = getNodeFromXPath(rec.quote.endContainerXPath);
+        console.log('End node found:', endNode);
+        if (endNode) {
+          console.log('End node content:', endNode.textContent);
+          console.log('End node type:', endNode.nodeType);
+        }
+      }
+      
+      // Test range recreation
+      console.log('Attempting range recreation...');
+      const range = ln_recreateRangeFromAnchor(rec.quote);
+      console.log('Range recreated successfully:', range !== null);
+      
+      if (range) {
+        console.log('Range text:', range.toString());
+      }
+    }
+    
+    // Test string-based search
+    console.log('Testing string-based search...');
+    const stringRange = ln_findQuoteRangeNormalized(rec.quote || { exact: rec.text });
+    console.log('String search successful:', stringRange !== null);
+    
+    if (stringRange) {
+      console.log('String search text:', stringRange.toString());
+    }
+    
+  } catch (e) {
+    console.error('Debug error:', e);
+  }
+  
+  console.log('=== Debug complete ===');
+}
+
 // --- Event Listeners and Initial Execution Flow ---
 
 // 1. Setup Toolbar Listeners
@@ -686,7 +1200,10 @@ if (chrome.storage && chrome.storage.onChanged) {
 const mo = new MutationObserver((m) => applyToolbarLang());
 mo.observe(document.documentElement, { childList: true, subtree: true });
 
-// 3. Run Main Restore Logic
+// 3. Expose debug function globally for troubleshooting
+window.laranoteDebug = debugHighlight;
+
+// 4. Run Main Restore Logic
 ln_applyAllFromStorage().then(() => {
   const targetId = getLaranoteHashId();
   if (targetId) {
