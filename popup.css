@@ -448,6 +448,10 @@ button:hover {
   margin-bottom: 8px;
 }
 
+.toggle-flex{
+  display: flex !important;
+}
+
 .toggle-label span {
   flex: 1;
   font-weight: 500;
@@ -460,6 +464,21 @@ button:hover {
   width: 44px;
   height: 22px;
   margin-left: 12px;
+}
+
+/* RTL support for Arabic language */
+[dir="rtl"] .toggle-switch {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
+[dir="rtl"] .toggle-slider:before {
+  left: auto;
+  right: 2px;
+}
+
+[dir="rtl"] .toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(-22px);
 }
 
 .toggle-switch input {
