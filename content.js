@@ -250,7 +250,7 @@ function getWarningMessage(complexity, lang = 'en') {
       title: 'تم اكتشاف تحديد معقد',
       message: 'يحتوي هذا التحديد على هيكل HTML معقد قد يسبب مشاكل في التظليل. قد لا يظهر التظليل بشكل صحيح أو قد يتصرف بشكل غير متوقع.',
       reasons: {
-        cross_element: 'ي跨越 عناصر متعددة',
+        cross_element: 'يحتوي علي عناصر متعددة',
         multiple_paragraphs: 'تم تحديد فقرات متعددة',
         heavy_formatting: 'تم اكتشاف تنسيق ثقيل',
         deep_nesting: 'تداخل HTML عميق',
@@ -268,7 +268,7 @@ function getWarningMessage(complexity, lang = 'en') {
 }
 function createToolbar() {
   if (toolbarEl) return toolbarEl; const el = document.createElement("div"); el.className = "yh-toolbar"; el.style.display = "none";
-  el.innerHTML = `\n      <span class="yh-brand"><img src="${chrome.runtime.getURL('icons/icon16.png')}" alt="Laranote" title="Laranote" /></span>
+  el.innerHTML = `\n      <span class="yh-brand"><img src="${chrome.runtime.getURL('icons/Laranote-main.png')}" alt="LaraNote" title="LaraNote" /></span>
       <button data-action="highlight" data-act="highlight">${AR.highlight}</button>
       <button data-action="note" data-act="note">${AR.note}</button>
       <div class="yh-toolbar-sep"></div>
@@ -307,7 +307,7 @@ function createWarningDialog() {
   
   dialog.innerHTML = `
     <div class="yh-warning-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-      <img src="${chrome.runtime.getURL('icons/icon32.png')}" alt="Warning" style="width: 24px; height: 24px;">
+      <img src="${chrome.runtime.getURL('icons/Laranote-main.png')}" alt="Warning" style="width: 50px; height: 50px; border-radius: 10px;">
       <h3 class="yh-warning-title" style="margin: 0; color: #ff6b35; font-size: 16px;"></h3>
     </div>
     <p class="yh-warning-message" style="margin: 0 0 15px 0; color: #333;"></p>
@@ -587,7 +587,6 @@ function getNodeFromXPath(xpathString) {
     
     return node;
   } catch (e) {
-    console.warn('LaraNote: XPath evaluation failed for:', xpathString, e);
     return null;
   }
 }
@@ -959,7 +958,6 @@ function ln_findQuoteRangeNormalized(q) {
     }
   }
   
-  console.log(`LaraNote: Searching in ${textNodes.length} text nodes for: "${exact.substring(0, 50)}..."`);
   
   // Try to find the text by checking combinations of adjacent nodes (for multi-node selections)
   for (let startIdx = 0; startIdx < textNodes.length; startIdx++) {
@@ -975,8 +973,6 @@ function ln_findQuoteRangeNormalized(q) {
       // Check if our exact text is found in the combined text
       const searchIdx = combinedText.indexOf(exact);
       if (searchIdx !== -1) {
-        console.log(`LaraNote: Found multi-node match spanning ${combinedNodes.length} nodes (nodes ${startIdx}-${endIdx})!`);
-        console.log(`LaraNote: Combined text length: ${combinedText.length}, search text length: ${exact.length}`);
         
         // Calculate the exact positions within the combined text
         let currentPos = 0;
@@ -1012,10 +1008,8 @@ function ln_findQuoteRangeNormalized(q) {
             range.setStart(startNode, Math.min(startOffset, startNode.nodeValue.length));
             range.setEnd(endNode, Math.min(endOffset, endNode.nodeValue.length));
             
-            console.log(`LaraNote: Created multi-node range successfully`);
             return range;
           } catch (e) {
-            console.warn('LaraNote: Failed to create multi-node range:', e);
           }
         }
       }
@@ -1023,13 +1017,11 @@ function ln_findQuoteRangeNormalized(q) {
       // Limit the number of nodes we combine to prevent excessive searching
       // Increased from 5 to 20 to handle longer multi-node selections
       if (combinedNodes.length > 20) {
-        console.log(`LaraNote: Reached node combination limit (20) at node ${endIdx}, continuing search...`);
         break;
       }
     }
   }
   
-  console.log('LaraNote: Multi-node search failed, trying single-node search');
   
   // FALLBACK: Try single-node search (existing logic)
   let foundRange = null;
@@ -1053,7 +1045,6 @@ function ln_findQuoteRangeNormalized(q) {
         method = 'exact';
         break;
       } catch (e) {
-        console.warn('LaraNote: Failed to create range for exact match:', e);
       }
     }
   }
@@ -1068,9 +1059,7 @@ function ln_findQuoteRangeNormalized(q) {
         range.setEnd(fuzzyMatch.endNode, fuzzyMatch.endOffset);
         foundRange = range;
         method = 'fuzzy';
-        console.log(`LaraNote: Fuzzy match found with ${Math.round(fuzzyMatch.ratio * 100)}% confidence`);
       } catch (e) {
-        console.warn('LaraNote: Failed to create range for fuzzy match:', e);
       }
     }
   }
@@ -1095,10 +1084,8 @@ function ln_findQuoteRangeNormalized(q) {
               range.setEnd(node, phraseIdx + phrase.length);
               foundRange = range;
               method = 'partial';
-              console.log(`LaraNote: Partial phrase match found: "${phrase}"`);
               break;
             } catch (e) {
-              console.warn('LaraNote: Failed to create range for partial match:', e);
             }
           }
         }
@@ -1109,11 +1096,9 @@ function ln_findQuoteRangeNormalized(q) {
   }
   
   if (!foundRange) {
-    console.log('LaraNote: Could not find text in document using any method:', exact.substring(0, 50) + '...');
     return null;
   }
   
-  console.log(`LaraNote: Found text using ${method} method`);
   return foundRange;
 }
 
@@ -1162,7 +1147,6 @@ function ln_createRangeFromTextPosition(startPos, endPos) {
       range.setEnd(endNode, Math.min(endOffset, endNode.nodeValue?.length || 0));
       return range;
     } catch (e) {
-      console.warn('LaraNote: Failed to create range from text position:', e);
       return null;
     }
   }
@@ -1220,18 +1204,15 @@ async function ln_applyAllFromStorage() {
               const requiredEndOffset = rec.quote.endOffset;
               if (requiredEndOffset > availableLength) {
                 isTextLengthMismatch = true;
-                console.log(`LaraNote: Text length mismatch detected for ${rec.id} (needs ${requiredEndOffset}, has ${availableLength}), treating as multi-text-node`);
               }
             }
           } catch (e) {
-            console.warn(`LaraNote: Error checking text length for ${rec.id}:`, e);
           }
         }
         
         if (isCrossParagraph || isMultiTextNode || isTextLengthMismatch) {
           // Complex selection - use string search first
           const selectionType = isCrossParagraph ? 'cross-paragraph' : (isMultiTextNode ? 'multi-text-node' : 'text-length-mismatch');
-          console.log(`LaraNote: Complex selection detected for ${rec.id} (${selectionType}), trying string search first`);
           if (rec.quote) {
             range = ln_findQuoteRangeNormalized(rec.quote);
             if (range) methodUsed = isCrossParagraph ? 'string-cross-para' : (isMultiTextNode ? 'string-multi' : 'string-length-mismatch');
@@ -1267,24 +1248,18 @@ async function ln_applyAllFromStorage() {
             if (rec.note) {
               addPin(span);
             }
-            console.log(`LaraNote: Restored highlight ${rec.id} using ${methodUsed} method`);
           } else {
             failCount++;
-            console.warn(`LaraNote: Failed to wrap range for highlight ${rec.id}`);
           }
         } catch (wrapError) {
           failCount++;
-          console.error(`LaraNote: Error wrapping range for highlight ${rec.id}:`, wrapError);
         }
       } else {
         failCount++;
-        console.warn(`LaraNote: Could not recreate range for highlight ${rec.id} - text may have changed`);
       }
     }
     
-    console.log(`LaraNote: Restoration complete - ${successCount} successful, ${failCount} failed`);
   } catch (e) { 
-    console.error("LaraNote: Error applying stored highlights:", e); 
   }
 }
 
@@ -1328,18 +1303,15 @@ async function ln_tryReanchorFromStorage(id) {
             const requiredEndOffset = rec.quote.endOffset;
             if (requiredEndOffset > availableLength) {
               isTextLengthMismatch = true;
-              console.log(`LaraNote: Text length mismatch detected for ${id} (needs ${requiredEndOffset}, has ${availableLength}), treating as multi-text-node`);
             }
           }
         } catch (e) {
-          console.warn(`LaraNote: Error checking text length for ${id}:`, e);
         }
       }
       
       if (isCrossParagraph || isMultiTextNode || isTextLengthMismatch) {
         // Complex selection - use string search first
         const selectionType = isCrossParagraph ? 'cross-paragraph' : (isMultiTextNode ? 'multi-text-node' : 'text-length-mismatch');
-        console.log(`LaraNote: Complex selection detected for ${id} (${selectionType}), trying string search first`);
         if (rec.quote) {
           range = ln_findQuoteRangeNormalized(rec.quote);
           if (range) methodUsed = isCrossParagraph ? 'string-cross-para' : (isMultiTextNode ? 'string-multi' : 'string-length-mismatch');
@@ -1364,13 +1336,11 @@ async function ln_tryReanchorFromStorage(id) {
     }
     
     if (!range) {
-      console.warn(`LaraNote: Could not reanchor highlight ${id} - text not found`);
       return;
     }
     
     const span = await wrapRangeWithSpan(range, id);
     if (span) {
-      console.log(`LaraNote: Successfully reanchored highlight ${id} using ${methodUsed} method`);
       
       // Enhanced scrolling with retry logic
       setTimeout(() => {
@@ -1384,12 +1354,10 @@ async function ln_tryReanchorFromStorage(id) {
             span.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)'; 
           }, 1200);
         } catch (scrollError) {
-          console.warn('LaraNote: Scroll failed:', scrollError);
         }
       }, 100);
     }
   } catch (e) { 
-    console.error('LaraNote: Error in ln_tryReanchorFromStorage:', e);
   }
 }
 
@@ -1450,76 +1418,7 @@ function applyToolbarLang() {
 }
 
 
-// --- Debug Helper for Troubleshooting Specific Highlights ---
 
-async function debugHighlight(id) {
-  console.log(`=== LaraNote Debug: Investigating highlight ${id} ===`);
-  
-  try {
-    const all = await chrome.storage.local.get(null);
-    const key = PAGE_KEY;
-    const arr = all[key];
-    if (!Array.isArray(arr)) {
-      console.log('No highlights found for this page');
-      return;
-    }
-    
-    const rec = arr.find(r => r.id === id);
-    if (!rec) {
-      console.log(`Highlight ${id} not found in storage`);
-      return;
-    }
-    
-    console.log('Stored record:', rec);
-    
-    if (rec.quote) {
-      console.log('Quote data:', rec.quote);
-      
-      if (rec.quote.startContainerXPath) {
-        console.log('Testing start XPath:', rec.quote.startContainerXPath);
-        const startNode = getNodeFromXPath(rec.quote.startContainerXPath);
-        console.log('Start node found:', startNode);
-        if (startNode) {
-          console.log('Start node content:', startNode.textContent);
-          console.log('Start node type:', startNode.nodeType);
-        }
-      }
-      
-      if (rec.quote.endContainerXPath) {
-        console.log('Testing end XPath:', rec.quote.endContainerXPath);
-        const endNode = getNodeFromXPath(rec.quote.endContainerXPath);
-        console.log('End node found:', endNode);
-        if (endNode) {
-          console.log('End node content:', endNode.textContent);
-          console.log('End node type:', endNode.nodeType);
-        }
-      }
-      
-      // Test range recreation
-      console.log('Attempting range recreation...');
-      const range = ln_recreateRangeFromAnchor(rec.quote);
-      console.log('Range recreated successfully:', range !== null);
-      
-      if (range) {
-        console.log('Range text:', range.toString());
-      }
-    }
-    
-    // Test string-based search
-    console.log('Testing string-based search...');
-    const stringRange = ln_findQuoteRangeNormalized(rec.quote || { exact: rec.text });
-    console.log('String search successful:', stringRange !== null);
-    
-    if (stringRange) {
-      console.log('String search text:', stringRange.toString());
-    }
-    
-  } catch (e) {
-    console.error('Debug error:', e);
-  }
-  
-  console.log('=== Debug complete ===');
-}
 
 // --- Event Listeners and Initial Execution Flow ---
 
@@ -1568,8 +1467,6 @@ if (chrome.storage && chrome.storage.onChanged) {
 const mo = new MutationObserver((m) => applyToolbarLang());
 mo.observe(document.documentElement, { childList: true, subtree: true });
 
-// 3. Expose debug function globally for troubleshooting
-window.laranoteDebug = debugHighlight;
 
 // 4. Run Main Restore Logic
 ln_applyAllFromStorage().then(() => {
