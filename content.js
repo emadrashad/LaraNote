@@ -333,8 +333,9 @@ function showWarningDialog(complexity, lang = 'en', onContinue, onCancel) {
     
     const messages = getWarningMessage(complexity, lang);
     
-    // Set language for proper font rendering
+    // Set language for proper font rendering and direction
     dialog.setAttribute('lang', lang);
+    dialog.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     
     const titleEl = dialog.querySelector('.yh-warning-title');
     const messageEl = dialog.querySelector('.yh-warning-message');

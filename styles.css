@@ -120,6 +120,18 @@ html.ln-dark .yh-highlight{
   font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
 }
 
+.yh-warning-dialog[dir="rtl"] {
+  text-align: right;
+}
+
+.yh-warning-dialog[dir="rtl"] .yh-warning-header {
+  flex-direction: row; /* Keep LTR for header to maintain icon-title order */
+}
+
+.yh-warning-dialog[dir="rtl"] .yh-warning-buttons {
+  flex-direction: row-reverse;
+}
+
 .yh-warning-dialog button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
