@@ -120,6 +120,11 @@ html.ln-dark .yh-highlight{
   font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
 }
 
+.yh-warning-dialog[lang="ar"] .yh-warning-continue,
+.yh-warning-dialog[lang="ar"] .yh-warning-cancel {
+  font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+}
+
 .yh-warning-dialog[dir="rtl"] {
   text-align: right;
 }
