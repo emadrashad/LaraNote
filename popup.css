@@ -136,17 +136,20 @@ header .logo {
 
 .card {
   border: 1px solid var(--border);
-
-  padding: 8px;
+  border-radius: 12px;
+  padding: 12px;
   background: var(--card-bg);
   cursor: pointer;
-  transition: transform 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .card:hover {
   background: var(--bg-secondary);
   border-color: var(--accent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
 }
 
 .url {
@@ -169,9 +172,29 @@ header .logo {
 .meta {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   color: var(--text-secondary);
   font-size: 11px;
-  margin-top: 6px;
+  margin-top: 8px;
+}
+
+.meta span:last-child {
+  background: var(--tag-bg, rgba(59, 130, 246, 0.1));
+  color: var(--tag-text, #3b82f6);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid var(--tag-border, rgba(59, 130, 246, 0.2));
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.meta span:last-child:hover {
+  background: var(--tag-hover-bg, rgba(59, 130, 246, 0.15));
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
 }
 
 .empty {
