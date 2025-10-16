@@ -1,6 +1,12 @@
 
 *{box-sizing:border-box}
 body{max-width:640px;margin:0 auto;font:14px system-ui,Segoe UI,Roboto,Arial;background:#0b1220;color:#e5e7eb;padding:0 12px 20px}
+
+/* Bilingual text switching */
+body[lang="ar"] .en-text,
+body[lang="en"] .ar-text{display:none}
+body[lang="ar"] .ar-text,
+body[lang="en"] .en-text{display:inline}
 header{display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #1f2937;margin-bottom:16px}
 header .logo{width:28px;height:28px;border-radius:6px;background:white}
 h1{font-size:18px;margin:0}

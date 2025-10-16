@@ -109,3 +109,88 @@ html.ln-dark .yh-highlight{
     color:#111827;
   }
 }
+
+/* === Warning Dialog Styles === */
+.yh-warning-dialog {
+  font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+  backdrop-filter: blur(4px);
+}
+
+.yh-warning-dialog[lang="ar"] {
+  font-family: 'Playpen Sans Arabic', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+}
+
+.yh-warning-dialog button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.yh-warning-dialog button:active {
+  transform: translateY(0);
+}
+
+/* Dark theme for warning dialog */
+.yh-warning-dialog {
+  background: #1f2937 !important;
+  border-color: #ff6b35 !important;
+  color: #e5e7eb !important;
+}
+
+.yh-warning-dialog .yh-warning-title {
+  color: #ff6b35 !important;
+}
+
+.yh-warning-dialog .yh-warning-message {
+  color: #e5e7eb !important;
+}
+
+.yh-warning-dialog .yh-warning-reasons {
+  color: #9ca3af !important;
+}
+
+.yh-warning-dialog .yh-warning-cancel {
+  background: #374151 !important;
+  color: #e5e7eb !important;
+  border-color: #4b5563 !important;
+}
+
+.yh-warning-dialog .yh-warning-cancel:hover {
+  background: #4b5563 !important;
+}
+
+.yh-warning-dialog .yh-warning-continue {
+  background: #ff6b35 !important;
+  color: white !important;
+}
+
+.yh-warning-dialog .yh-warning-continue:hover {
+  background: #ff5722 !important;
+}
+
+/* Light theme for warning dialog */
+@media (prefers-color-scheme: light) {
+  html:not(.ln-dark) .yh-warning-dialog {
+    background: #ffffff !important;
+    border-color: #ff6b35 !important;
+    color: #111827 !important;
+  }
+  
+  html:not(.ln-dark) .yh-warning-dialog .yh-warning-message {
+    color: #111827 !important;
+  }
+  
+  html:not(.ln-dark) .yh-warning-dialog .yh-warning-reasons {
+    color: #6b7280 !important;
+  }
+  
+  html:not(.ln-dark) .yh-warning-dialog .yh-warning-cancel {
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+  }
+  
+  html:not(.ln-dark) .yh-warning-dialog .yh-warning-cancel:hover {
+    background: #e5e7eb !important;
+  }
+}

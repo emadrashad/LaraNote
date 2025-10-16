@@ -135,7 +135,137 @@ function getLaranoteHashId() {
   } catch (e) { return null; }
 }
 
-function getSelectionRangeSafe() { const s = window.getSelection(); if (!s || s.rangeCount === 0) return null; const r = s.getRangeAt(0); return r.collapsed ? null : r; }
+function getSelectionRangeSafe() { const s = window.getSelection(); if (!s || s.rangeCount === 0) return null; const r = s.getRangeAt(0); return r.collapsed ? null: r; }
+
+// HTML Complexity Detection and Warning System
+function analyzeSelectionComplexity(range) {
+  if (!range) return { isComplex: false, reason: '', severity: 0 };
+  
+  let complexityScore = 0;
+  let reasons = [];
+  
+  // Get common ancestor container
+  const container = range.commonAncestorContainer;
+  const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
+  
+  // Check for cross-paragraph selection
+  const startElement = range.startContainer.nodeType === Node.TEXT_NODE ? 
+    range.startContainer.parentElement : range.startContainer;
+  const endElement = range.endContainer.nodeType === Node.TEXT_NODE ? 
+    range.endContainer.parentElement : range.endContainer;
+    
+  if (startElement !== endElement) {
+    complexityScore += 3;
+    reasons.push('cross_element');
+  }
+  
+  // Check for multiple paragraph elements
+  const paragraphs = element.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, td');
+  if (paragraphs.length > 1) {
+    complexityScore += 4;
+    reasons.push('multiple_paragraphs');
+  }
+  
+  // Check for inline formatting elements
+  const inlineElements = element.querySelectorAll('span, a, strong, em, b, i, u, mark, code, sup, sub');
+  if (inlineElements.length > 5) {
+    complexityScore += 2;
+    reasons.push('heavy_formatting');
+  }
+  
+  // Check for nested structures
+  let maxDepth = 0;
+  let current = element;
+  while (current && current !== document.body) {
+    maxDepth++;
+    current = current.parentElement;
+  }
+  if (maxDepth > 8) {
+    complexityScore += 2;
+    reasons.push('deep_nesting');
+  }
+  
+  // Check for table structures
+  if (element.querySelectorAll('table, tr, td, th').length > 0) {
+    complexityScore += 3;
+    reasons.push('table_content');
+  }
+  
+  // Check for list structures
+  if (element.querySelectorAll('ul, ol, li').length > 3) {
+    complexityScore += 2;
+    reasons.push('list_content');
+  }
+  
+  // Check for media elements
+  if (element.querySelectorAll('img, video, audio, iframe, embed').length > 0) {
+    complexityScore += 1;
+    reasons.push('media_content');
+  }
+  
+  // Check text length vs element complexity
+  const selectedText = range.toString().trim();
+  const textLength = selectedText.length;
+  if (textLength > 500 && inlineElements.length > 3) {
+    complexityScore += 2;
+    reasons.push('long_formatted_text');
+  }
+  
+  return {
+    isComplex: complexityScore >= 5,
+    reason: reasons[0] || '',
+    severity: Math.min(complexityScore, 10),
+    allReasons: reasons,
+    textLength: textLength
+  };
+}
+
+async function shouldShowWarning(complexity, lang = 'en') {
+  // Check user preference first
+  const result = await chrome.storage.sync.get({ laranote_complex_warning: true });
+  if (!result.laranote_complex_warning) return false;
+  
+  return complexity.isComplex && complexity.severity >= 5;
+}
+
+function getWarningMessage(complexity, lang = 'en') {
+  const messages = {
+    en: {
+      title: 'Complex Selection Detected',
+      message: 'This selection contains complex HTML structure that may cause highlighting issues. The highlight might not appear correctly or may behave unexpectedly.',
+      reasons: {
+        cross_element: 'Spans multiple elements',
+        multiple_paragraphs: 'Multiple paragraphs selected',
+        heavy_formatting: 'Heavy formatting detected',
+        deep_nesting: 'Deep HTML nesting',
+        table_content: 'Contains table elements',
+        list_content: 'Contains list structures',
+        media_content: 'Contains media elements',
+        long_formatted_text: 'Long formatted text'
+      },
+      continue: 'Continue Anyway',
+      cancel: 'Cancel'
+    },
+    ar: {
+      title: 'تم اكتشاف تحديد معقد',
+      message: 'يحتوي هذا التحديد على هيكل HTML معقد قد يسبب مشاكل في التظليل. قد لا يظهر التظليل بشكل صحيح أو قد يتصرف بشكل غير متوقع.',
+      reasons: {
+        cross_element: 'ي跨越 عناصر متعددة',
+        multiple_paragraphs: 'تم تحديد فقرات متعددة',
+        heavy_formatting: 'تم اكتشاف تنسيق ثقيل',
+        deep_nesting: 'تداخل HTML عميق',
+        table_content: 'يحتوي على عناصر جدول',
+        list_content: 'يحتوي على هياكل القوائم',
+        media_content: 'يحتوي على عناصر وسائط',
+        long_formatted_text: 'نص منسوق طويل'
+      },
+      continue: 'متابعة على أي حال',
+      cancel: 'إلغاء'
+    }
+  };
+  
+  return messages[lang] || messages.en;
+}
 function createToolbar() {
   if (toolbarEl) return toolbarEl; const el = document.createElement("div"); el.className = "yh-toolbar"; el.style.display = "none";
   el.innerHTML = `\n      <span class="yh-brand"><img src="${chrome.runtime.getURL('icons/icon16.png')}" alt="Laranote" title="Laranote" /></span>
@@ -148,6 +278,123 @@ function createToolbar() {
   el.addEventListener("mousedown", e => e.preventDefault());
   el.addEventListener("click", onToolbarClick);
   document.body.appendChild(el); toolbarEl = el; return el;
+}
+
+function createWarningDialog() {
+  let dialog = document.getElementById('yh-warning-dialog');
+  if (dialog) return dialog;
+  
+  dialog = document.createElement('div');
+  dialog.id = 'yh-warning-dialog';
+  dialog.className = 'yh-warning-dialog';
+  dialog.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 2px solid #ff6b35;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    z-index: 10001;
+    max-width: 400px;
+    font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    display: none;
+  `;
+  
+  dialog.innerHTML = `
+    <div class="yh-warning-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+      <img src="${chrome.runtime.getURL('icons/icon32.png')}" alt="Warning" style="width: 24px; height: 24px;">
+      <h3 class="yh-warning-title" style="margin: 0; color: #ff6b35; font-size: 16px;"></h3>
+    </div>
+    <p class="yh-warning-message" style="margin: 0 0 15px 0; color: #333;"></p>
+    <div class="yh-warning-reasons" style="margin: 0 0 15px 0; font-size: 12px; color: #666;"></div>
+    <div class="yh-warning-buttons" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="yh-warning-cancel" style="padding: 8px 16px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;"></button>
+      <button class="yh-warning-continue" style="padding: 8px 16px; border: none; background: #ff6b35; color: white; border-radius: 4px; cursor: pointer;"></button>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  return dialog;
+}
+
+function showWarningDialog(complexity, lang = 'en', onContinue, onCancel) {
+  try {
+    const dialog = createWarningDialog();
+    if (!dialog) {
+      console.error('LaraNote: Failed to create warning dialog');
+      if (onContinue) onContinue(); // Fallback to continue if dialog fails
+      return;
+    }
+    
+    const messages = getWarningMessage(complexity, lang);
+    
+    // Set language for proper font rendering
+    dialog.setAttribute('lang', lang);
+    
+    const titleEl = dialog.querySelector('.yh-warning-title');
+    const messageEl = dialog.querySelector('.yh-warning-message');
+    const reasonsEl = dialog.querySelector('.yh-warning-reasons');
+    const cancelBtn = dialog.querySelector('.yh-warning-cancel');
+    const continueBtn = dialog.querySelector('.yh-warning-continue');
+    
+    if (!titleEl || !messageEl || !reasonsEl || !cancelBtn || !continueBtn) {
+      console.error('LaraNote: Warning dialog elements not found');
+      if (onContinue) onContinue(); // Fallback to continue
+      return;
+    }
+    
+    titleEl.textContent = messages.title;
+    messageEl.textContent = messages.message;
+    
+    // Show reasons
+    if (complexity.allReasons && complexity.allReasons.length > 0) {
+      const reasonList = complexity.allReasons.map(reason => 
+        `• ${messages.reasons[reason] || reason}`
+      ).join('<br>');
+      reasonsEl.innerHTML = reasonList;
+      reasonsEl.style.display = 'block';
+    } else {
+      reasonsEl.style.display = 'none';
+    }
+    
+    cancelBtn.textContent = messages.cancel;
+    continueBtn.textContent = messages.continue;
+    
+    // Remove any existing event listeners
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    const newContinueBtn = continueBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    continueBtn.parentNode.replaceChild(newContinueBtn, continueBtn);
+    
+    const cleanup = () => {
+      dialog.style.display = 'none';
+    };
+    
+    const handleCancel = () => {
+      cleanup();
+      if (onCancel) onCancel();
+    };
+    
+    const handleContinue = () => {
+      cleanup();
+      if (onContinue) onContinue();
+    };
+    
+    newCancelBtn.addEventListener('click', handleCancel);
+    newContinueBtn.addEventListener('click', handleContinue);
+    
+    // Show dialog
+    dialog.style.display = 'block';
+    
+  } catch (error) {
+    console.error('LaraNote: Error showing warning dialog:', error);
+    if (onContinue) onContinue(); // Fallback to continue on any error
+  }
 }
 function showToolbarAt(x, y) { const t = createToolbar(); t.style.left = x + "px"; t.style.top = y + "px"; t.style.display = "flex"; }
 function hideToolbar() { if (toolbarEl) toolbarEl.style.display = "none"; }
@@ -408,13 +655,7 @@ async function onToolbarClick(e) {
   const text = currentRange.toString();
 
   if (action === "highlight") { 
-    const id = makeId(); 
-    const el = await wrapRangeWithSpan(currentRange, id); 
-    if (el) { 
-      await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
-    } 
-    hideToolbar(); 
-    window.getSelection()?.removeAllRanges(); 
+    await handleHighlightAction(text, anchor);
   }
   if (action === "copy") { 
     try { await navigator.clipboard.writeText(text); } catch (err) { } 
@@ -422,18 +663,114 @@ async function onToolbarClick(e) {
     window.getSelection()?.removeAllRanges(); 
   }
   if (action === "note") { 
+    await handleNoteAction(text, anchor);
+  }
+  if (action === "remove") { 
+    removeHighlightAtRange(currentRange); 
+    hideToolbar(); 
+    window.getSelection()?.removeAllRanges(); 
+  }
+}
+
+async function handleHighlightAction(text, anchor) {
+  try {
+    // Analyze complexity and check if warning should be shown
+    const complexity = analyzeSelectionComplexity(currentRange);
+    
+    // Get current language
+    const { laranote_lang: lang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
+    const { laranote_complex_warning: warningEnabled = true } = await chrome.storage.sync.get({ laranote_complex_warning: true });
+    
+    // If complex and warnings enabled, show dialog
+    if (complexity.isComplex && warningEnabled && complexity.severity >= 5) {
+      showWarningDialog(complexity, lang, 
+        async () => {
+          // User chose to continue
+          const id = makeId(); 
+          const el = await wrapRangeWithSpan(currentRange, id); 
+          if (el) { 
+            await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
+          } 
+          hideToolbar(); 
+          window.getSelection()?.removeAllRanges();
+        },
+        () => {
+          // User chose to cancel
+          hideToolbar(); 
+          window.getSelection()?.removeAllRanges();
+        }
+      );
+    } else {
+      // No warning needed, proceed directly
+      const id = makeId(); 
+      const el = await wrapRangeWithSpan(currentRange, id); 
+      if (el) { 
+        await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
+      } 
+      hideToolbar(); 
+      window.getSelection()?.removeAllRanges();
+    }
+  } catch (error) {
+    console.error('LaraNote: Error in handleHighlightAction:', error);
+    // Fallback: proceed with highlight anyway
+    const id = makeId(); 
+    const el = await wrapRangeWithSpan(currentRange, id); 
+    if (el) { 
+      await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
+    } 
+    hideToolbar(); 
+    window.getSelection()?.removeAllRanges();
+  }
+}
+
+async function handleNoteAction(text, anchor) {
+  try {
+    // Analyze complexity and check if warning should be shown
+    const complexity = analyzeSelectionComplexity(currentRange);
+    
+    // Get current language
+    const { laranote_lang: lang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
+    const { laranote_complex_warning: warningEnabled = true } = await chrome.storage.sync.get({ laranote_complex_warning: true });
+    
+    // If complex and warnings enabled, show dialog
+    if (complexity.isComplex && warningEnabled && complexity.severity >= 5) {
+      showWarningDialog(complexity, lang, 
+        async () => {
+          // User chose to continue
+          const id = makeId(); 
+          const el = await wrapRangeWithSpan(currentRange, id); 
+          if (el) { 
+            showNotePopup(el, id, text, anchor); 
+          } 
+          hideToolbar(); 
+          window.getSelection()?.removeAllRanges();
+        },
+        () => {
+          // User chose to cancel
+          hideToolbar(); 
+          window.getSelection()?.removeAllRanges();
+        }
+      );
+    } else {
+      // No warning needed, proceed directly
+      const id = makeId(); 
+      const el = await wrapRangeWithSpan(currentRange, id); 
+      if (el) { 
+        showNotePopup(el, id, text, anchor); 
+      } 
+      hideToolbar(); 
+      window.getSelection()?.removeAllRanges();
+    }
+  } catch (error) {
+    console.error('LaraNote: Error in handleNoteAction:', error);
+    // Fallback: proceed with note anyway
     const id = makeId(); 
     const el = await wrapRangeWithSpan(currentRange, id); 
     if (el) { 
       showNotePopup(el, id, text, anchor); 
     } 
     hideToolbar(); 
-    window.getSelection()?.removeAllRanges(); 
-  }
-  if (action === "remove") { 
-    removeHighlightAtRange(currentRange); 
-    hideToolbar(); 
-    window.getSelection()?.removeAllRanges(); 
+    window.getSelection()?.removeAllRanges();
   }
 }
 
