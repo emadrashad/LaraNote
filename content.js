@@ -658,9 +658,19 @@ async function onToolbarClick(e) {
     await handleHighlightAction(text, anchor);
   }
   if (action === "copy") { 
-    try { await navigator.clipboard.writeText(text); } catch (err) { } 
+    // Hide toolbar and clear selection immediately to prevent re-opening
     hideToolbar(); 
     window.getSelection()?.removeAllRanges(); 
+    currentRange = null;
+    
+    // Perform the copy with the already captured text
+    try { 
+      await navigator.clipboard.writeText(text); 
+    } catch (err) { 
+      // Clipboard may fail due to permissions; toolbar remains hidden regardless
+      console.warn('LaraNote: clipboard write failed', err); 
+    } 
+    return; 
   }
   if (action === "note") { 
     await handleNoteAction(text, anchor);
