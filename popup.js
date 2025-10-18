@@ -129,10 +129,19 @@ function render(items, lang) {
     const noteContent = it.hasNote ? it.notes[0] : (it.text || "");
     const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(noteContent);
     
+    // Format date without seconds
+    const formattedDate = d.toLocaleString(undefined, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
     el.innerHTML = `
       <div class="url">${it.url}</div>
       <div class="note" dir="auto" ${hasArabic ? 'lang="ar"' : ''}>${trimText(noteContent, 100)}</div>
-      <div class="meta"><span>${d.toLocaleString()}</span><span>${it.hasNote ? `${T.highlight} · ${T.note}` : T.highlight}</span></div>
+      <div class="meta"><span class="always-ltr">${formattedDate}</span><span>${it.hasNote ? `${T.highlight} · ${T.note}` : T.highlight}</span></div>
     `;
     el.addEventListener("click", () => {
       const frag = buildTextFragment((it.text || "").slice(0, 150));

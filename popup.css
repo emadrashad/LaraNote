@@ -178,6 +178,10 @@ header .logo {
   margin-top: 8px;
 }
 
+.always-ltr {
+  direction: ltr !important;
+}
+
 .meta span:last-child {
   background: var(--tag-bg, rgba(59, 130, 246, 0.1));
   color: var(--tag-text, #3b82f6);
