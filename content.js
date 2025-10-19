@@ -315,8 +315,16 @@ function analyzeSelectionComplexity(range) {
 
 async function shouldShowWarning(complexity, lang = 'en') {
   // Check user preference first
-  const result = await chrome.storage.sync.get({ laranote_complex_warning: true });
+  const result = await chrome.storage.sync.get({ 
+    laranote_complex_warning: true,
+    laranote_show_complex_warning: false 
+  });
+  
+  // If complex warnings are disabled entirely, don't show
   if (!result.laranote_complex_warning) return false;
+  
+  // If the specific warning dialog is disabled, don't show
+  if (!result.laranote_show_complex_warning) return false;
   
   return complexity.isComplex && complexity.severity >= 5;
 }
@@ -791,12 +799,12 @@ async function handleHighlightAction(text, anchor) {
     // Analyze complexity and check if warning should be shown
     const complexity = analyzeSelectionComplexity(currentRange);
     
-    // Get current language
+    // Get current language and settings
     const { laranote_lang: lang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
-    const { laranote_complex_warning: warningEnabled = true } = await chrome.storage.sync.get({ laranote_complex_warning: true });
+    const { laranote_complex_warning: warningEnabled = true, laranote_show_complex_warning: showComplexWarning = false } = await chrome.storage.sync.get({ laranote_complex_warning: true, laranote_show_complex_warning: false });
     
     // If complex and warnings enabled, show dialog
-    if (complexity.isComplex && warningEnabled && complexity.severity >= 5) {
+    if (complexity.isComplex && warningEnabled && showComplexWarning && complexity.severity >= 5) {
       showWarningDialog(complexity, lang, 
         async () => {
           // User chose to continue
@@ -842,12 +850,12 @@ async function handleNoteAction(text, anchor) {
     // Analyze complexity and check if warning should be shown
     const complexity = analyzeSelectionComplexity(currentRange);
     
-    // Get current language
+    // Get current language and settings
     const { laranote_lang: lang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
-    const { laranote_complex_warning: warningEnabled = true } = await chrome.storage.sync.get({ laranote_complex_warning: true });
+    const { laranote_complex_warning: warningEnabled = true, laranote_show_complex_warning: showComplexWarning = false } = await chrome.storage.sync.get({ laranote_complex_warning: true, laranote_show_complex_warning: false });
     
     // If complex and warnings enabled, show dialog
-    if (complexity.isComplex && warningEnabled && complexity.severity >= 5) {
+    if (complexity.isComplex && warningEnabled && showComplexWarning && complexity.severity >= 5) {
       showWarningDialog(complexity, lang, 
         async () => {
           // User chose to continue

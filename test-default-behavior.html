@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Default Behavior</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .expected { color: green; font-weight: bold; }
+        .actual { color: blue; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+        .complex-content {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px dashed #ff6b35;
+            background: #fff3cd;
+            border-radius: 5px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: white;
+            cursor: pointer;
+        }
+        button:hover { background: #f0f0f0; }
+        .step { margin: 20px 0; padding: 15px; border-left: 4px solid #2196F3; background: #f8f9fa; }
+        .critical { background: #fff3cd; border: 2px solid #ff9800; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>🚨 CRITICAL ISSUE IDENTIFIED</h1>
+    <p>This test demonstrates the root cause of why the warning dialog isn't showing.</p>
+
+    <div class="critical">
+        <h3>🔍 ROOT CAUSE FOUND:</h3>
+        <p><strong>The default value in popup.js is FALSE, but the checkbox in popup.html is NOT checked by default!</strong></p>
+        <p>This creates a mismatch where:</p>
+        <ol>
+            <li>User opens popup → sees toggle OFF (because default is false)</li>
+            <li>User turns toggle ON → saves correctly to storage</li>
+            <li>User reopens popup → loads default FALSE again → toggle shows OFF</li>
+            <li>User thinks toggle is ON but it's actually OFF in storage</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>📋 Step 1: Simulate Fresh Extension Install</h2>
+        <p>Click to simulate what happens when the extension is first installed:</p>
+        <div class="controls">
+            <button onclick="simulateFreshInstall()">🔄 Simulate Fresh Install</button>
+            <button onclick="clearStorage()">🗑️ Clear All Storage</button>
+        </div>
+        <div id="fresh-install-result" class="result">Click to simulate fresh install...</div>
+    </div>
+
+    <div class="step">
+        <h2>🧪 Step 2: Test User Behavior</h2>
+        <p>Simulate what a user would do:</p>
+        <div class="controls">
+            <button onclick="simulateUserTurnsOnToggle()">✅ User Turns Toggle ON</button>
+            <button onclick="simulateUserClosesAndReopens()">🔄 User Closes & Reopens Popup</button>
+            <button onclick="simulateUserTriesComplexContent()">🎯 User Tests Complex Content</button>
+        </div>
+        <div id="user-behavior-result" class="result">Simulate user behavior...</div>
+    </div>
+
+    <div class="step">
+        <h2>🎯 Step 3: Show the Problem</h2>
+        <div class="complex-content">
+            <h3>🎯 Test This Complex Content</h3>
+            <p>This is a <strong>complex paragraph</strong> with <em>multiple formatting</em> elements and <span style="color: red;">nested spans</span> that should trigger the warning.</p>
+            <ul>
+                <li>Item with <strong>bold text</strong></li>
+                <li>Item with <a href="#">link</a> and <code>code</code></li>
+                <li>Item with <em>italic</em> and <strong>bold</strong> together</li>
+            </ul>
+            <p>And here's some <strong><em><span style="background: yellow;">deeply nested content</span></em></strong> that makes it even more complex.</p>
+        </div>
+        <button onclick="testActualWarningLogic()">🔍 Test Actual Warning Logic</button>
+        <div id="actual-logic-result" class="result">Test the actual logic...</div>
+    </div>
+
+    <div class="step">
+        <h2>✅ Step 4: The Fix</h2>
+        <div id="fix-result" class="result">
+            <h4>🛠️ SOLUTION:</h4>
+            <p><strong>Change the default value in popup.js from false to true:</strong></p>
+            <pre style="background: #f8f8f8; padding: 10px; border-radius: 3px; overflow-x: auto;">
+// OLD CODE (line 299 in popup.js):
+const { laranote_show_complex_warning } = await chrome.storage.sync.get({ 
+    laranote_show_complex_warning: false  // ❌ This is the problem!
+});
+
+// NEW CODE (should be):
+const { laranote_show_complex_warning } = await chrome.storage.sync.get({ 
+    laranote_show_complex_warning: true   // ✅ This matches user expectations
+});
+            </pre>
+            <p><strong>Why this fix works:</strong></p>
+            <ul>
+                <li>✅ When extension is installed, toggle defaults to ON (user expects this)</li>
+                <li>✅ When user turns toggle OFF, it saves correctly</li>
+                <li>✅ When user reopens popup, it loads the saved OFF state</li>
+                <li>✅ No more confusion about toggle state vs actual behavior</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simulate chrome.storage.sync
+        window.chrome = {
+            storage: {
+                sync: {
+                    get: async(keys) => {
+                        const result = {};
+                        for (const [key, defaultValue] of Object.entries(keys)) {
+                            const stored = localStorage.getItem(key);
+                            result[key] = stored !== null ? JSON.parse(stored) : defaultValue;
+                        }
+                        return result;
+                    },
+                    set: async(items) => {
+                        for (const [key, value] of Object.entries(items)) {
+                            localStorage.setItem(key, JSON.stringify(value));
+                        }
+                    }
+                }
+            }
+        };
+
+        // Simulate complexity analysis
+        function analyzeSelectionComplexity() {
+            return {
+                isComplex: true,
+                severity: 6, // Above threshold of 5
+                allReasons: ['cross_element', 'heavy_formatting', 'list_content', 'deep_nesting']
+            };
+        }
+
+        async function simulateFreshInstall() {
+            try {
+                // Clear all storage (simulate fresh install)
+                localStorage.clear();
+                
+                // Simulate popup.js loadSettings function
+                const { laranote_show_complex_warning } = await chrome.storage.sync.get({ 
+                    laranote_show_complex_warning: false  // This is the current problematic default
+                });
+                
+                // Simulate popup.html checkbox state
+                const checkboxDefaultState = false; // checkbox is not checked by default
+                
+                document.getElementById('fresh-install-result').innerHTML = `
+                    <div><strong>🔄 Fresh Install Simulation:</strong></div>
+                    <div>📊 Storage default value: <span class="error">${laranote_show_complex_warning}</span> (popup.js default)</div>
+                    <div>☑️ Checkbox default state: <span class="error">${checkboxDefaultState}</span> (popup.html)</div>
+                    <div class="warning">⚠️ <strong>PROBLEM:</strong> Both show OFF by default, but user might expect ON!</div>
+                    <div class="error">❌ This means warning is disabled by default, even for complex content!</div>
+                `;
+            } catch (error) {
+                document.getElementById('fresh-install-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function simulateUserTurnsOnToggle() {
+            try {
+                // User turns toggle ON and saves
+                await chrome.storage.sync.set({ laranote_show_complex_warning: true });
+                
+                document.getElementById('user-behavior-result').innerHTML = `
+                    <div><strong>✅ User Action: Turned Toggle ON</strong></div>
+                    <div>📊 Saved to storage: <span class="success">true</span></div>
+                    <div>✅ User thinks: "Warning is now enabled!"</div>
+                    <div>🔄 Now test what happens when they reopen the popup...</div>
+                `;
+            } catch (error) {
+                document.getElementById('user-behavior-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function simulateUserClosesAndReopens() {
+            try {
+                // Simulate popup.js loadSettings when user reopens
+                const { laranote_show_complex_warning } = await chrome.storage.sync.get({ 
+                    laranote_show_complex_warning: false  // This loads the DEFAULT again!
+                });
+                
+                const actualStoredValue = localStorage.getItem('laranote_show_complex_warning');
+                
+                document.getElementById('user-behavior-result').innerHTML = `
+                    <div><strong>🔄 User Reopens Popup</strong></div>
+                    <div>📦 Actual stored value: <span class="success">${actualStoredValue ? JSON.parse(actualStoredValue) : 'null'}</span></div>
+                    <div>📊 Loaded default value: <span class="error">${laranote_show_complex_warning}</span></div>
+                    <div class="critical">🚨 <strong>CRITICAL BUG:</strong> Popup shows toggle OFF even though user set it to ON!</div>
+                    <div class="error">❌ User thinks warning is disabled, but it's actually enabled in storage!</div>
+                `;
+            } catch (error) {
+                document.getElementById('user-behavior-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function simulateUserTriesComplexContent() {
+            try {
+                const complexity = analyzeSelectionComplexity();
+                
+                // Test with the actual stored value (not the default)
+                const stored = await chrome.storage.sync.get({ laranote_show_complex_warning: false });
+                const actualStored = localStorage.getItem('laranote_show_complex_warning');
+                const actualValue = actualStored ? JSON.parse(actualStored) : false;
+                
+                const willShowWarning = complexity.isComplex && actualValue && complexity.severity >= 5;
+                
+                document.getElementById('user-behavior-result').innerHTML = `
+                    <div><strong>🎯 User Tests Complex Content</strong></div>
+                    <div>📊 Complexity: isComplex=${complexity.isComplex}, severity=${complexity.severity}</div>
+                    <div>📦 Actual stored setting: <span class="${actualValue ? 'success' : 'error'}">${actualValue}</span></div>
+                    <div>🎯 Will show warning: <span class="${willShowWarning ? 'expected' : 'error'}">${willShowWarning ? '✅ YES' : '❌ NO'}</span></div>
+                    <div class="warning">⚠️ The warning behavior depends on what's actually stored, not what the popup shows!</div>
+                `;
+            } catch (error) {
+                document.getElementById('user-behavior-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testActualWarningLogic() {
+            try {
+                const complexity = analyzeSelectionComplexity();
+                
+                // Test with current popup.js logic (default false)
+                const currentLogic = await chrome.storage.sync.get({ 
+                    laranote_complex_warning: true,
+                    laranote_show_complex_warning: false  // Current popup.js default
+                });
+                
+                const willShowWarningCurrent = complexity.isComplex && 
+                    currentLogic.laranote_complex_warning && 
+                    currentLogic.laranote_show_complex_warning && 
+                    complexity.severity >= 5;
+                
+                // Test with fixed logic (default true)
+                const fixedLogic = await chrome.storage.sync.get({ 
+                    laranote_complex_warning: true,
+                    laranote_show_complex_warning: true  // Fixed popup.js default
+                });
+                
+                const willShowWarningFixed = complexity.isComplex && 
+                    fixedLogic.laranote_complex_warning && 
+                    fixedLogic.laranote_show_complex_warning && 
+                    complexity.severity >= 5;
+                
+                document.getElementById('actual-logic-result').innerHTML = `
+                    <div><strong>🔍 Testing Actual Warning Logic:</strong></div>
+                    <div>📊 Complexity: isComplex=${complexity.isComplex}, severity=${complexity.severity}</div>
+                    <hr>
+                    <div><strong>❌ Current Logic (default false):</strong></div>
+                    <div>Show complex warning: <span class="error">${currentLogic.laranote_show_complex_warning}</span></div>
+                    <div>Will show warning: <span class="error">${willShowWarningCurrent ? '✅ YES' : '❌ NO'}</span></div>
+                    <hr>
+                    <div><strong>✅ Fixed Logic (default true):</strong></div>
+                    <div>Show complex warning: <span class="success">${fixedLogic.laranote_show_complex_warning}</span></div>
+                    <div>Will show warning: <span class="success">${willShowWarningFixed ? '✅ YES' : '❌ NO'}</span></div>
+                `;
+            } catch (error) {
+                document.getElementById('actual-logic-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('user-behavior-result').innerHTML = '<div class="success">✅ Storage cleared!</div>';
+        }
+
+        // Initialize
+        simulateFreshInstall();
+    </script>
+</body>
+</html>

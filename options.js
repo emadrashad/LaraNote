@@ -11,6 +11,10 @@ async function load() {
   const { laranote_complex_warning } = await chrome.storage.sync.get({ laranote_complex_warning: true });
   document.getElementById('complexWarning').checked = laranote_complex_warning;
   
+  // Load show complex warning dialog setting (default to false to prevent user annoyance)
+  const { laranote_show_complex_warning } = await chrome.storage.sync.get({ laranote_show_complex_warning: false });
+  document.getElementById('showComplexWarning').checked = laranote_show_complex_warning;
+  
   // Apply language to body for CSS switching
   document.body.setAttribute('lang', laranote_lang || DEFAULT_LANG);
 }
@@ -18,7 +22,13 @@ async function save() {
   const pp = Math.max(5, Math.min(50, parseInt(document.getElementById('perpage').value||'10',10)));
   const v = document.getElementById('lang').value;
   const warningEnabled = document.getElementById('complexWarning').checked;
-  await chrome.storage.sync.set({ laranote_lang: v, laranote_per_page: pp, laranote_complex_warning: warningEnabled });
+  const showComplexWarning = document.getElementById('showComplexWarning').checked;
+  await chrome.storage.sync.set({ 
+    laranote_lang: v, 
+    laranote_per_page: pp, 
+    laranote_complex_warning: warningEnabled,
+    laranote_show_complex_warning: showComplexWarning
+  });
   
   // Update body language for CSS switching
   document.body.setAttribute('lang', v);

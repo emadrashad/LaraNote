@@ -147,29 +147,29 @@ html.ln-dark .yh-highlight{
   transform: translateY(0);
 }
 
-/* Dark theme for warning dialog */
+/* Dark theme for warning dialog - Yellow and Black theme */
 .yh-warning-dialog {
-  background: #1f2937 !important;
-  border-color: #ff6b35 !important;
-  color: #e5e7eb !important;
+  background: #000000 !important;
+  border-color: #facc15 !important;
+  color: #ffffff !important;
 }
 
 .yh-warning-dialog .yh-warning-title {
-  color: #ff6b35 !important;
+  color: #facc15 !important;
 }
 
 .yh-warning-dialog .yh-warning-message {
-  color: #e5e7eb !important;
+  color: #ffffff !important;
 }
 
 .yh-warning-dialog .yh-warning-reasons {
-  color: #9ca3af !important;
+  color: #e5e7eb !important;
 }
 
 .yh-warning-dialog .yh-warning-cancel {
   background: #374151 !important;
-  color: #e5e7eb !important;
-  border-color: #4b5563 !important;
+  color: #ffffff !important;
+  border-color: #6b7280 !important;
 }
 
 .yh-warning-dialog .yh-warning-cancel:hover {
@@ -177,24 +177,25 @@ html.ln-dark .yh-highlight{
 }
 
 .yh-warning-dialog .yh-warning-continue {
-  background: #ff6b35 !important;
-  color: white !important;
+  background: #facc15 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
 }
 
 .yh-warning-dialog .yh-warning-continue:hover {
-  background: #ff5722 !important;
+  background: #eab308 !important;
 }
 
-/* Light theme for warning dialog */
+/* Light theme for warning dialog - Yellow and Black theme */
 @media (prefers-color-scheme: light) {
   html:not(.ln-dark) .yh-warning-dialog {
     background: #ffffff !important;
-    border-color: #ff6b35 !important;
-    color: #111827 !important;
+    border-color: #facc15 !important;
+    color: #000000 !important;
   }
   
   html:not(.ln-dark) .yh-warning-dialog .yh-warning-message {
-    color: #111827 !important;
+    color: #000000 !important;
   }
   
   html:not(.ln-dark) .yh-warning-dialog .yh-warning-reasons {
@@ -203,7 +204,7 @@ html.ln-dark .yh-highlight{
   
   html:not(.ln-dark) .yh-warning-dialog .yh-warning-cancel {
     background: #f3f4f6 !important;
-    color: #111827 !important;
+    color: #000000 !important;
     border-color: #d1d5db !important;
   }
   

@@ -21,6 +21,8 @@ const I18N = {
     language_hint: "لغة الواجهة.",
     show_toolbar: "إظهار شريط الأدوات عند التظليل",
     toolbar_hint: "التحكم في ظهور شريط الأدوات عند تحديد النص.",
+    show_complex_warning: "إظهار مربع حوار التحذير المعقد",
+    complex_warning_hint: "إظهار مربع حوار التحذير عند تحديد محتوى معقد.",
     export_json: "تصدير JSON",
     import_json: "استيراد JSON",
     data_management: "إدارة البيانات",
@@ -44,6 +46,8 @@ const I18N = {
     language_hint: "Interface language.",
     show_toolbar: "Show toolbar when highlighting",
     toolbar_hint: "Control whether the toolbar appears when selecting text.",
+    show_complex_warning: "Show complex warning dialog",
+    complex_warning_hint: "Show warning dialog when selecting complex content.",
     export_json: "Export JSON",
     import_json: "Import JSON",
     data_management: "Data Management",
@@ -290,10 +294,12 @@ async function loadSettings() {
   const { laranote_per_page } = await chrome.storage.sync.get({ laranote_per_page: 5 });
   const { laranote_lang } = await chrome.storage.sync.get({ laranote_lang: DEFAULT_LANG });
   const { laranote_show_toolbar } = await chrome.storage.sync.get({ laranote_show_toolbar: true });
+  const { laranote_show_complex_warning } = await chrome.storage.sync.get({ laranote_show_complex_warning: true });
   
   document.getElementById('settings-perpage').value = laranote_per_page;
   document.getElementById('settings-lang').value = laranote_lang;
   document.getElementById('settings-toolbar-toggle').checked = laranote_show_toolbar;
+  document.getElementById('settings-complex-warning-toggle').checked = laranote_show_complex_warning;
   
   // Update translations for current language
   updateSettingsTranslations(laranote_lang);
@@ -354,11 +360,13 @@ async function saveSettings(e) {
   const perPage = parseInt(document.getElementById('settings-perpage').value || '5', 10);
   const lang = document.getElementById('settings-lang').value;
   const showToolbar = document.getElementById('settings-toolbar-toggle').checked;
+  const showComplexWarning = document.getElementById('settings-complex-warning-toggle').checked;
   
   await chrome.storage.sync.set({ 
     laranote_lang: lang, 
     laranote_per_page: perPage,
-    laranote_show_toolbar: showToolbar
+    laranote_show_toolbar: showToolbar,
+    laranote_show_complex_warning: showComplexWarning
   });
   
   // Update the current session
