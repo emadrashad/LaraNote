@@ -108,8 +108,101 @@ function injectArabicFontCSS() {
 
 const AR = { highlight: "تظليل", note: "ملاحظة", copy: "نسخ", remove: "إزالة", saved: "تم الحفظ", addNotePlaceholder: "اكتب ملاحظتك هنا...", notes: "ملاحظات", cancel: "إلغاء", save: "حفظ" };
 const KEY_PREFIX = "yh_notes_v1::"; 
-const PAGE_KEY = KEY_PREFIX + location.origin + location.pathname;
+
+// Get the page key with fallback to old format for backward compatibility
+function getPageKey() {
+  // Try new format first (full URL)
+  const fullUrlKey = KEY_PREFIX + location.href;
+  
+  // For backward compatibility, also check old format (origin + pathname)
+  const oldFormatKey = KEY_PREFIX + location.origin + location.pathname;
+  
+  
+  return {
+    current: fullUrlKey,
+    legacy: oldFormatKey,
+    // Helper to get the appropriate key for storage operations
+    getStorageKey: async function() {
+      // Check if we have data in the new format first
+      const newData = await chrome.storage.local.get(this.current);
+      if (newData[this.current] && newData[this.current].length > 0) {
+        return this.current;
+      }
+      
+      // If no new format data, check if old format exists
+      const oldData = await chrome.storage.local.get(this.legacy);
+      if (oldData[this.legacy] && oldData[this.legacy].length > 0) {
+       
+        return this.legacy;
+      }
+      
+      // Default to new format for new pages
+      
+      return this.current;
+    }
+  };
+}
+
+// Get the current page key - use a function to get fresh URL each time
+function getCurrentPageKey() {
+  return getPageKey();
+}
+
+// For backward compatibility, keep the PAGE_KEY reference
+const PAGE_KEY = getCurrentPageKey();
 let toolbarEl = null, notePopEl = null, currentRange = null;
+
+// Track URL changes for client-side routing
+let currentUrl = location.href;
+
+// Monitor URL changes (for SPAs with client-side routing)
+function checkUrlChange() {
+  if (location.href !== currentUrl) {
+    currentUrl = location.href;
+    // Re-run the restoration logic with the new URL
+    ln_applyAllFromStorage();
+  }
+}
+
+// Check for URL changes periodically (for SPAs)
+setInterval(checkUrlChange, 1000);
+
+// Also listen for popstate events (back/forward navigation)
+window.addEventListener('popstate', () => {
+  
+  currentUrl = location.href;
+  ln_applyAllFromStorage();
+});
+
+// Override history methods to detect URL changes
+const originalPushState = history.pushState;
+const originalReplaceState = history.replaceState;
+
+history.pushState = function(...args) {
+ 
+  originalPushState.apply(this, args);
+  // Check URL after a small delay to allow the change to take effect
+  setTimeout(() => {
+    if (location.href !== currentUrl) {
+    
+      currentUrl = location.href;
+      ln_applyAllFromStorage();
+    }
+  }, 100);
+};
+
+history.replaceState = function(...args) {
+
+  originalReplaceState.apply(this, args);
+  // Check URL after a small delay
+  setTimeout(() => {
+    if (location.href !== currentUrl) {
+  
+      currentUrl = location.href;
+      ln_applyAllFromStorage();
+    }
+  }, 100);
+};
 
 // Initialize Arabic font support
 injectArabicFontCSS();
@@ -504,12 +597,23 @@ async function wrapRangeWithSpan(range, id) {
 }
 
 async function saveRecord(r) { 
-  const data = (await chrome.storage.local.get(PAGE_KEY))[PAGE_KEY] || []; 
+  const pageKey = getCurrentPageKey();
+  const storageKey = await pageKey.getStorageKey();
+
+  const data = (await chrome.storage.local.get(storageKey))[storageKey] || []; 
   data.push(r); 
-  await chrome.storage.local.set({ [PAGE_KEY]: data }); 
+  await chrome.storage.local.set({ [storageKey]: data }); 
 }
-async function getRecords() { return (await chrome.storage.local.get(PAGE_KEY))[PAGE_KEY] || []; }
-async function setRecords(l) { await chrome.storage.local.set({ [PAGE_KEY]: l }); }
+async function getRecords() { 
+  const pageKey = getCurrentPageKey();
+  const storageKey = await pageKey.getStorageKey();
+  return (await chrome.storage.local.get(storageKey))[storageKey] || []; 
+}
+async function setRecords(l) { 
+  const pageKey = getCurrentPageKey();
+  const storageKey = await pageKey.getStorageKey();
+  await chrome.storage.local.set({ [storageKey]: l }); 
+}
 function selectionClientPoint(range) { const rect = range.getBoundingClientRect(); return { x: Math.max(12, rect.left + window.scrollX), y: Math.max(12, rect.top + window.scrollY) - 40 }; }
 
 // --- XPath/Offset Anchoring Utilities ---
@@ -1169,8 +1273,9 @@ function ln_createRangeFromTextPosition(startPos, endPos) {
 async function ln_applyAllFromStorage() {
   try {
     const all = await chrome.storage.local.get(null);
-    const key = PAGE_KEY;
-    const arr = all[key];
+    const pageKey = getCurrentPageKey();
+    const storageKey = await pageKey.getStorageKey();
+    const arr = all[storageKey];
     if (!Array.isArray(arr)) return;
     
     let successCount = 0;
@@ -1276,8 +1381,9 @@ async function ln_applyAllFromStorage() {
 async function ln_tryReanchorFromStorage(id) {
   try {
     const all = await chrome.storage.local.get(null);
-    const key = PAGE_KEY;
-    const arr = all[key];
+    const pageKey = getCurrentPageKey();
+    const storageKey = await pageKey.getStorageKey();
+    const arr = all[storageKey];
     if (!Array.isArray(arr)) return;
     const rec = arr.find(r => r.id === id);
     if (!rec || !rec.quote || !rec.quote.exact) return;
@@ -1478,7 +1584,7 @@ const mo = new MutationObserver((m) => applyToolbarLang());
 mo.observe(document.documentElement, { childList: true, subtree: true });
 
 
-// 4. Run Main Restore Logic
+
 ln_applyAllFromStorage().then(() => {
   const targetId = getLaranoteHashId();
   if (targetId) {
