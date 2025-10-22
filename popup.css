@@ -281,10 +281,12 @@ button:hover {
 .pager:empty{
   background: none !important;
   border-top: none !important;
+  padding: 0 !important;
 }
 
 .pager button {
   padding: 6px 10px;
+  border-radius: 10px;
 }
 
 .pager .info {

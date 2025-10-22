@@ -799,9 +799,22 @@ async function handleHighlightAction(text, anchor) {
     // Analyze complexity and check if warning should be shown
     const complexity = analyzeSelectionComplexity(currentRange);
     
-    // Get current language and settings
-    const { laranote_lang: lang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
-    const { laranote_complex_warning: warningEnabled = true, laranote_show_complex_warning: showComplexWarning = false } = await chrome.storage.sync.get({ laranote_complex_warning: true, laranote_show_complex_warning: false });
+    // Get current language and settings with error handling for extension context issues
+    let lang = 'en';
+    let warningEnabled = true;
+    let showComplexWarning = false;
+    
+    try {
+      const { laranote_lang: storageLang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
+      const { laranote_complex_warning: storageWarningEnabled = true, laranote_show_complex_warning: storageShowComplexWarning = true } = await chrome.storage.sync.get({ laranote_complex_warning: true, laranote_show_complex_warning: true });
+      lang = storageLang;
+      warningEnabled = storageWarningEnabled;
+      showComplexWarning = storageShowComplexWarning;
+    } catch (storageError) {
+      console.warn('LaraNote: Storage access failed, using defaults:', storageError);
+      // Continue with default values if storage is inaccessible
+      showComplexWarning = true; // Default to showing complex warnings
+    }
     
     // If complex and warnings enabled, show dialog
     if (complexity.isComplex && warningEnabled && showComplexWarning && complexity.severity >= 5) {
@@ -850,9 +863,22 @@ async function handleNoteAction(text, anchor) {
     // Analyze complexity and check if warning should be shown
     const complexity = analyzeSelectionComplexity(currentRange);
     
-    // Get current language and settings
-    const { laranote_lang: lang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
-    const { laranote_complex_warning: warningEnabled = true, laranote_show_complex_warning: showComplexWarning = false } = await chrome.storage.sync.get({ laranote_complex_warning: true, laranote_show_complex_warning: false });
+    // Get current language and settings with error handling for extension context issues
+    let lang = 'en';
+    let warningEnabled = true;
+    let showComplexWarning = false;
+    
+    try {
+      const { laranote_lang: storageLang = 'en' } = await chrome.storage.sync.get({ laranote_lang: 'en' });
+      const { laranote_complex_warning: storageWarningEnabled = true, laranote_show_complex_warning: storageShowComplexWarning = true } = await chrome.storage.sync.get({ laranote_complex_warning: true, laranote_show_complex_warning: true });
+      lang = storageLang;
+      warningEnabled = storageWarningEnabled;
+      showComplexWarning = storageShowComplexWarning;
+    } catch (storageError) {
+      console.warn('LaraNote: Storage access failed, using defaults:', storageError);
+      // Continue with default values if storage is inaccessible
+      showComplexWarning = true; // Default to showing complex warnings
+    }
     
     // If complex and warnings enabled, show dialog
     if (complexity.isComplex && warningEnabled && showComplexWarning && complexity.severity >= 5) {
