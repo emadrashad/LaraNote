@@ -114,6 +114,13 @@ header .tit {
 header {
   background: var(--brand-yellow);
   color: var(--bg-dark);
+  z-index: 100;
+}
+
+/* When settings popup is open, reduce header z-index */
+#settings-popup[style*="display: flex"] ~ header,
+#settings-popup[style*="display: block"] ~ header {
+  z-index: 10;
 }
 
 header .tit {
@@ -213,14 +220,17 @@ footer {
   flex: 0 0 auto;
   position: sticky;
   bottom: 0;
+  background: var(--bg-secondary);
+  direction: ltr !important;
+  z-index: 10;
+}
+
+.footer-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
   border-top: 1px solid var(--border);
-  background: var(--bg-secondary);
-  direction: ltr !important;
-
 }
 
 footer .foot-left {
@@ -316,6 +326,10 @@ button:hover {
 }
 
 [dir="rtl"] .card {
+  direction: rtl;
+}
+
+[dir="rtl"] .pager {
   direction: rtl;
 }
 
