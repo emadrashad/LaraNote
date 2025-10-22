@@ -217,6 +217,9 @@ async function start() {
 // Global variables for settings
 let settingsBtn, settingsPopup, settingsBack, settingsSave, settingsExport, settingsImport, settingsImportFile, settingsStatus;
 let isSaving = false;
+// Prevent duplicate handler registration across multiple initializations
+let __settingsHandlersInitialized = false;
+let __saveButtonInitialized = false;
 
 // Global variables for main functionality
 let __perPage = 5;
@@ -545,22 +548,41 @@ async function importData(file) {
   
 // Event listeners setup function
 function setupSettingsEventListeners() {
+  // Ensure elements exist before marking initialized
+  const btnEl = settingsBtn || document.getElementById('settings-btn');
+  const backEl = settingsBack || document.getElementById('settings-back');
+  const exportEl = settingsExport || document.getElementById('settings-export');
+  const importEl = settingsImport || document.getElementById('settings-import');
+  const importFileEl = settingsImportFile || document.getElementById('settings-import-file');
+  const popupEl = settingsPopup || document.getElementById('settings-popup');
+  
+  // If key elements aren't ready yet, try later (don't set the guard)
+  if (!popupEl) return;
+  
+  // Assign globals if they were not yet set
+  if (!settingsBtn) settingsBtn = btnEl;
+  if (!settingsBack) settingsBack = backEl;
+  if (!settingsExport) settingsExport = exportEl;
+  if (!settingsImport) settingsImport = importEl;
+  if (!settingsImportFile) settingsImportFile = importFileEl;
+  if (!settingsPopup) settingsPopup = popupEl;
+  
+  if (__settingsHandlersInitialized) return;
+  __settingsHandlersInitialized = true;
+  
   if (settingsBtn) {
     settingsBtn.addEventListener('click', showSettings);
-
   }
   
   if (settingsBack) {
     settingsBack.addEventListener('click', hideSettings);
-
   }
   
   if (settingsExport) {
     settingsExport.addEventListener('click', exportData);
-
   }
   
-  if (settingsImport) {
+  if (settingsImport && settingsImportFile) {
     settingsImport.addEventListener('click', () => {
       settingsImportFile.click();
     });
@@ -568,7 +590,7 @@ function setupSettingsEventListeners() {
   
   if (settingsImportFile) {
     settingsImportFile.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files && e.target.files[0];
       if (file) {
         importData(file);
       }
@@ -582,7 +604,6 @@ function setupSettingsEventListeners() {
         hideSettings();
       }
     });
-
   }
   
   // Close settings on Escape key
@@ -591,21 +612,20 @@ function setupSettingsEventListeners() {
       hideSettings();
     }
   });
-
-
 }
 
 // Setup save button with retry mechanism
 function setupSaveButton() {
   const saveButton = document.getElementById('settings-save');
+  if (!saveButton) return; // Wait until DOM is ready
+  if (__saveButtonInitialized) return;
+  __saveButtonInitialized = true;
   
-  if (saveButton) {
-    saveButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      saveSettings(e);
-    });
-  }
+  saveButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    saveSettings(e);
+  });
 }
 
 setupSettingsEventListeners();

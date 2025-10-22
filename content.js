@@ -173,7 +173,7 @@ function checkUrlChange() {
 }
 
 // Check for URL changes periodically (for SPAs)
-setInterval(checkUrlChange, 1000);
+const __lnUrlChangeIntervalId = setInterval(checkUrlChange, 1000);
 
 // Also listen for popstate events (back/forward navigation)
 window.addEventListener('popstate', () => {
@@ -1625,7 +1625,11 @@ if (chrome.storage && chrome.storage.onChanged) {
 const mo = new MutationObserver((m) => applyToolbarLang());
 mo.observe(document.documentElement, { childList: true, subtree: true });
 
-
+// Cleanup observers and timers on page hide/unload to prevent leaks
+window.addEventListener('pagehide', () => {
+  try { clearInterval(__lnUrlChangeIntervalId); } catch (e) {}
+  try { mo.disconnect(); } catch (e) {}
+});
 
 ln_applyAllFromStorage().then(() => {
   const targetId = getLaranoteHashId();
