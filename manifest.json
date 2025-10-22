@@ -37,7 +37,7 @@
       "128": "icons/icon128.png"
     }
   },
-  "options_page": "options.html",
+
   "web_accessible_resources": [
     {
       "resources": [
