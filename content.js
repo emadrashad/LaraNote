@@ -84,7 +84,6 @@ const arabicFontCSS = `
     display: flex;
     align-items: center;
     gap: 8px;
-    background: white;
     border: 1px solid #ccc;
     padding: 8px;
     border-radius: 6px;
@@ -94,13 +93,22 @@ const arabicFontCSS = `
   }
 `;
 
-// Inject Arabic font CSS
+// Inject Arabic font CSS - but fix the problematic toolbar styles
 function injectArabicFontCSS() {
   if (document.getElementById('yh-arabic-fonts')) return;
   
+  // Create a modified version of the Arabic CSS that preserves Arabic fonts
+  // but removes the toolbar styling that conflicts with the main theme system
+  const modifiedArabicCSS = arabicFontCSS
+    .replace(/background:\s*white;?/g, '') // Remove specific white background
+    .replace(/all:\s*initial;?/g, '') // Remove the all:initial that causes issues
+    .replace(/\.yh-toolbar button\s*{[^}]*}/g, '') // Remove button styles that override hover effects
+    .replace(/\.yh-toolbar button:hover[^{]*{[^}]*}/g, '') // Remove button hover styles
+    .replace(/\.yh-toolbar button:focus[^{]*{[^}]*}/g, ''); // Remove button focus styles
+  
   const style = document.createElement('style');
   style.id = 'yh-arabic-fonts';
-  style.textContent = arabicFontCSS;
+  style.textContent = modifiedArabicCSS;
   document.head.appendChild(style);
 }
 
