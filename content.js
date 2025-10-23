@@ -510,6 +510,12 @@ function showToolbarAt(x, y) { const t = createToolbar(); t.style.left = x + "px
 function hideToolbar() { if (toolbarEl) toolbarEl.style.display = "none"; }
 function makeId() { return "yh_" + Math.random().toString(36).slice(2, 9); }
 async function wrapRangeWithSpan(range, id) {
+  // Null guard to prevent "Cannot read properties of null" errors
+  if (!range) {
+    console.warn('LaraNote: wrapRangeWithSpan called with null range');
+    return null;
+  }
+  
   // Get the current language setting first
   let lang = 'en';
   let dir = 'ltr';
@@ -768,14 +774,15 @@ function ln_recreateRangeFromAnchor(anchor) {
 
 async function onToolbarClick(e) {
   const btn = e.target.closest("button"); 
-  if (!btn || !currentRange) return; 
+  const range = currentRange ? currentRange.cloneRange() : null;
+  if (!btn || !range) return; 
   const action = btn.dataset.action;
   
-  const anchor = getDOMAnchor(currentRange);
-  const text = currentRange.toString();
+  const anchor = getDOMAnchor(range);
+  const text = range.toString();
 
   if (action === "highlight") { 
-    await handleHighlightAction(text, anchor);
+    await handleHighlightAction(text, anchor, range);
   }
   if (action === "copy") { 
     // Hide toolbar and clear selection immediately to prevent re-opening
@@ -793,19 +800,19 @@ async function onToolbarClick(e) {
     return; 
   }
   if (action === "note") { 
-    await handleNoteAction(text, anchor);
+    await handleNoteAction(text, anchor, range);
   }
   if (action === "remove") { 
-    removeHighlightAtRange(currentRange); 
+    removeHighlightAtRange(range); 
     hideToolbar(); 
     window.getSelection()?.removeAllRanges(); 
   }
 }
 
-async function handleHighlightAction(text, anchor) {
+async function handleHighlightAction(text, anchor, range) {
   try {
     // Analyze complexity and check if warning should be shown
-    const complexity = analyzeSelectionComplexity(currentRange);
+    const complexity = analyzeSelectionComplexity(range);
     
     // Get current language and settings with error handling for extension context issues
     let lang = 'en';
@@ -830,7 +837,7 @@ async function handleHighlightAction(text, anchor) {
         async () => {
           // User chose to continue
           const id = makeId(); 
-          const el = await wrapRangeWithSpan(currentRange, id); 
+          const el = await wrapRangeWithSpan(range, id); 
           if (el) { 
             await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
           } 
@@ -846,18 +853,18 @@ async function handleHighlightAction(text, anchor) {
     } else {
       // No warning needed, proceed directly
       const id = makeId(); 
-      const el = await wrapRangeWithSpan(currentRange, id); 
-      if (el) { 
-        await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
-      } 
-      hideToolbar(); 
-      window.getSelection()?.removeAllRanges();
+          const el = await wrapRangeWithSpan(range, id); 
+          if (el) { 
+            await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
+          } 
+          hideToolbar(); 
+          window.getSelection()?.removeAllRanges();
     }
   } catch (error) {
     console.error('LaraNote: Error in handleHighlightAction:', error);
     // Fallback: proceed with highlight anyway
     const id = makeId(); 
-    const el = await wrapRangeWithSpan(currentRange, id); 
+    const el = await wrapRangeWithSpan(range, id); 
     if (el) { 
       await saveRecord({ id, text, note: "", createdAt: Date.now(), quote: anchor }); 
     } 
@@ -866,10 +873,10 @@ async function handleHighlightAction(text, anchor) {
   }
 }
 
-async function handleNoteAction(text, anchor) {
+async function handleNoteAction(text, anchor, range) {
   try {
     // Analyze complexity and check if warning should be shown
-    const complexity = analyzeSelectionComplexity(currentRange);
+    const complexity = analyzeSelectionComplexity(range);
     
     // Get current language and settings with error handling for extension context issues
     let lang = 'en';
@@ -894,7 +901,7 @@ async function handleNoteAction(text, anchor) {
         async () => {
           // User chose to continue
           const id = makeId(); 
-          const el = await wrapRangeWithSpan(currentRange, id); 
+          const el = await wrapRangeWithSpan(range, id); 
           if (el) { 
             showNotePopup(el, id, text, anchor); 
           } 
@@ -910,7 +917,7 @@ async function handleNoteAction(text, anchor) {
     } else {
       // No warning needed, proceed directly
       const id = makeId(); 
-      const el = await wrapRangeWithSpan(currentRange, id); 
+      const el = await wrapRangeWithSpan(range, id); 
       if (el) { 
         showNotePopup(el, id, text, anchor); 
       } 
@@ -921,7 +928,7 @@ async function handleNoteAction(text, anchor) {
     console.error('LaraNote: Error in handleNoteAction:', error);
     // Fallback: proceed with note anyway
     const id = makeId(); 
-    const el = await wrapRangeWithSpan(currentRange, id); 
+    const el = await wrapRangeWithSpan(range, id); 
     if (el) { 
       showNotePopup(el, id, text, anchor); 
     } 
@@ -1599,6 +1606,11 @@ async function shouldShowToolbar() {
 // 1. Setup Toolbar Listeners
 document.addEventListener("mouseup", async (e) => { 
   setTimeout(async () => { 
+    // If mouseup happened inside LaraNote UI, do not reset selection/toolbar
+    if ((toolbarEl && toolbarEl.contains(e.target)) || (notePopEl && notePopEl.contains(e.target))) {
+      __lnMouseDownActive = false;
+      return;
+    }
     __lnMouseDownActive = false;
     // Only show toolbar when text was selected by dragging
     if (!__lnDragSelecting) {
