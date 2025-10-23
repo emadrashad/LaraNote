@@ -84,7 +84,7 @@ const arabicFontCSS = `
     display: flex;
     align-items: center;
     gap: 8px;
-    border: 1px solid #ccc;
+   
     padding: 8px;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -1580,6 +1580,12 @@ function applyToolbarLang() {
 
 // --- Event Listeners and Initial Execution Flow ---
 
+// Drag-only selection gating
+let __lnMouseDownActive = false;
+let __lnDragSelecting = false;
+let __lnMouseDownX = 0;
+let __lnMouseDownY = 0;
+
 // Function to check if toolbar should be shown
 async function shouldShowToolbar() {
   try {
@@ -1591,12 +1597,20 @@ async function shouldShowToolbar() {
 }
 
 // 1. Setup Toolbar Listeners
-document.addEventListener("mouseup", async () => { 
+document.addEventListener("mouseup", async (e) => { 
   setTimeout(async () => { 
+    __lnMouseDownActive = false;
+    // Only show toolbar when text was selected by dragging
+    if (!__lnDragSelecting) {
+      hideToolbar(); 
+      currentRange = null; 
+      return; 
+    }
     const r = getSelectionRangeSafe(); 
     if (!r) { 
       hideToolbar(); 
       currentRange = null; 
+      __lnDragSelecting = false;
       return; 
     } 
     
@@ -1604,15 +1618,31 @@ document.addEventListener("mouseup", async () => {
     const showToolbar = await shouldShowToolbar();
     if (!showToolbar) {
       hideToolbar();
+      __lnDragSelecting = false;
       return;
     }
     
     currentRange = r; 
     const pt = selectionClientPoint(r); 
     showToolbarAt(pt.x, pt.y); 
+    __lnDragSelecting = false;
   }, 0); 
 });
-document.addEventListener("mousedown", e => { if (toolbarEl && !toolbarEl.contains(e.target)) hideToolbar(); if (notePopEl && !notePopEl.contains(e.target)) hideNotePopup(); });
+document.addEventListener("mousedown", e => {
+  __lnMouseDownActive = true;
+  __lnDragSelecting = false;
+  __lnMouseDownX = e.clientX;
+  __lnMouseDownY = e.clientY;
+  if (toolbarEl && !toolbarEl.contains(e.target)) hideToolbar();
+  if (notePopEl && !notePopEl.contains(e.target)) hideNotePopup();
+});
+
+document.addEventListener("mousemove", e => {
+  if (!__lnMouseDownActive) return;
+  const dx = Math.abs(e.clientX - __lnMouseDownX);
+  const dy = Math.abs(e.clientY - __lnMouseDownY);
+  if (dx + dy >= 4) __lnDragSelecting = true; // small threshold to detect drag
+});
 document.addEventListener("keydown", e => { if (e.key === "Escape") { hideToolbar(); hideNotePopup(); window.getSelection()?.removeAllRanges(); } });
 
 // 2. Setup Language Listeners (CSP safe)
@@ -1629,6 +1659,8 @@ mo.observe(document.documentElement, { childList: true, subtree: true });
 window.addEventListener('pagehide', () => {
   try { clearInterval(__lnUrlChangeIntervalId); } catch (e) {}
   try { mo.disconnect(); } catch (e) {}
+  __lnMouseDownActive = false;
+  __lnDragSelecting = false;
 });
 
 ln_applyAllFromStorage().then(() => {
