@@ -22,7 +22,47 @@
         html {
             scroll-behavior: smooth;
         }
+        
+        /* Playpen Sans Arabic Font */
+        @font-face {
+            font-family: 'Playpen Sans Arabic';
+            src: url('../fonts/PlaypenSansArabic-VariableFont_wght.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+        }
+        
         body { font-family: 'Inter', sans-serif; }
+        
+        /* Arabic Language Styling */
+        [lang="ar"] body,
+        [lang="ar"] .card,
+        [lang="ar"] button,
+        [lang="ar"] select,
+        [lang="ar"] input,
+        [lang="ar"] textarea,
+        [lang="ar"] h1,
+        [lang="ar"] h2,
+        [lang="ar"] h3,
+        [lang="ar"] p,
+        [lang="ar"] span {
+            font-family: 'Playpen Sans Arabic', 'Inter', sans-serif !important;
+            font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* RTL adjustments for Arabic layout */
+        [lang="ar"] .fab.fa-chrome.mr-2 {
+            margin-right: 0 !important;
+            margin-left: 0.5rem !important;
+        }
+        
+        [lang="ar"] .fas.fa-check-circle.text-green-500.mr-3.mt-1 {
+            margin-right: 0 !important;
+            margin-left: 0.75rem !important;
+        }
         .hero-gradient { background: linear-gradient(135deg, #FFFBEB 0%, #FDE68A 100%); }
         .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
@@ -96,7 +136,7 @@
                 </div>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="https://chrome.google.com/webstore/detail/your-extension-id-here" target="_blank" class="bg-brand-color text-black px-8 py-4 rounded-lg font-semibold hover-lift inline-flex items-center justify-center">
+                        <a href="https://chromewebstore.google.com/detail/laranote-%E2%80%94-highlights-not/bndnfjlgifalapbbeeofjbmiildpkoio?authuser=0&hl=en" target="_blank" class="bg-brand-color text-black px-8 py-4 rounded-lg font-semibold hover-lift inline-flex items-center justify-center">
                             <i class="fab fa-chrome mr-2"></i>
                             <span data-translate="hero_cta">Add to Chrome - It's Free</span>
                         </a>
