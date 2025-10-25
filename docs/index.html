@@ -87,13 +87,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div class="space-y-8">
                     <div class="space-y-4">
-                        <h1 data-translate="hero_title" class="text-5xl lg:text-6xl font-black text-gray-900 leading-tight text-shadow">
-                            Your Digital Highlighter & Notebook.
-                        </h1>
-                        <p data-translate="hero_subtitle" class="text-xl text-gray-700 leading-relaxed">
-                            LaraNote is a browser extension that allows you to highlight text and take notes on any webpage. Your highlights and notes are saved locally, specific to the URL you are on.
-                        </p>
-                    </div>
+                    <h1 data-translate="hero_title" class="text-5xl lg:text-6xl font-black text-gray-900 leading-tight text-shadow">
+                        Your Digital Highlighter & Notebook.
+                    </h1>
+                    <p data-translate="hero_subtitle" class="text-xl text-gray-700 leading-relaxed">
+                        LaraNote is a browser extension that allows you to highlight text and take notes on any webpage. Your highlights and notes are saved locally, specific to the URL you are on. Now featuring a modern UI and full Arabic language support!
+                    </p>
+                </div>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
                         <a href="https://chrome.google.com/webstore/detail/your-extension-id-here" target="_blank" class="bg-brand-color text-black px-8 py-4 rounded-lg font-semibold hover-lift inline-flex items-center justify-center">
@@ -166,8 +166,41 @@
                     <div class="w-16 h-16 bg-brand-color rounded-lg flex items-center justify-center mb-6">
                         <i class="fas fa-file-export text-2xl text-black"></i>
                     </div>
-                    <h3 data-translate="feature_export_import_title" class="text-2xl font-bold text-gray-900 mb-4">Export/Import</h3>
-                    <p data-translate="feature_export_import_desc" class="text-gray-600">Export your notes as a JSON file for backup or to use in other applications. You can also import notes.</p>
+                    <h3 data-translate="feature_export_import_title" class="text-2xl font-bold text-gray-900 mb-4">Enhanced Export/Import</h3>
+                    <p data-translate="feature_export_import_desc" class="text-gray-600">Export your notes as JSON files for backup or sharing. Import notes from other sessions with advanced filtering options.</p>
+                </div>
+
+                <!-- New Features -->
+                <div class="bg-white rounded-xl p-8 shadow-lg hover-lift">
+                    <div class="w-16 h-16 bg-brand-color rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-paint-brush text-2xl text-black"></i>
+                    </div>
+                    <h3 data-translate="feature_modern_ui_title" class="text-2xl font-bold text-gray-900 mb-4">Modern UI</h3>
+                    <p data-translate="feature_modern_ui_desc" class="text-gray-600">Enjoy a sleek, modern interface with smooth animations, improved typography, and enhanced user experience.</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 shadow-lg hover-lift">
+                    <div class="w-16 h-16 bg-brand-color rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-language text-2xl text-black"></i>
+                    </div>
+                    <h3 data-translate="feature_arabic_support_title" class="text-2xl font-bold text-gray-900 mb-4">Arabic Font Support</h3>
+                    <p data-translate="feature_arabic_support_desc" class="text-gray-600">Full support for Arabic text with beautiful Playpen Sans Arabic font. Perfect for multilingual content and RTL languages.</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 shadow-lg hover-lift">
+                    <div class="w-16 h-16 bg-brand-color rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-sliders-h text-2xl text-black"></i>
+                    </div>
+                    <h3 data-translate="feature_toolbar_controls_title" class="text-2xl font-bold text-gray-900 mb-4">Smart Toolbar Controls</h3>
+                    <p data-translate="feature_toolbar_controls_desc" class="text-gray-600">Customize when the toolbar appears - only on drag selection, with options to show/hide based on your preferences.</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 shadow-lg hover-lift">
+                    <div class="w-16 h-16 bg-brand-color rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-exclamation-triangle text-2xl text-black"></i>
+                    </div>
+                    <h3 data-translate="feature_complex_content_title" class="text-2xl font-bold text-gray-900 mb-4">Complex Content Protection</h3>
+                    <p data-translate="feature_complex_content_desc" class="text-gray-600">Smart warnings for complex content selections to prevent formatting issues and ensure clean highlighting.</p>
                 </div>
             </div>
         </div>
@@ -309,8 +342,16 @@
                 feature_removing_desc: "Remove highlights with a single click, keeping your workspace clean and organized.",
                 feature_url_saving_title: "Per-URL Savings",
                 feature_url_saving_desc: "All your highlights and notes are saved against the URL of the page you are on, keeping everything in context.",
-                feature_export_import_title: "Export/Import",
-                feature_export_import_desc: "Export your notes as a JSON file for backup or to use in other applications. You can also import notes.",
+                feature_export_import_title: "Enhanced Export/Import",
+                feature_export_import_desc: "Export your notes as JSON files for backup or sharing. Import notes from other sessions with advanced filtering options.",
+                feature_modern_ui_title: "Modern UI",
+                feature_modern_ui_desc: "Enjoy a sleek, modern interface with smooth animations, improved typography, and enhanced user experience.",
+                feature_arabic_support_title: "Arabic Font Support",
+                feature_arabic_support_desc: "Full support for Arabic text with beautiful Playpen Sans Arabic font. Perfect for multilingual content and RTL languages.",
+                feature_toolbar_controls_title: "Smart Toolbar Controls",
+                feature_toolbar_controls_desc: "Customize when the toolbar appears - only on drag selection, with options to show/hide based on your preferences.",
+                feature_complex_content_title: "Complex Content Protection",
+                feature_complex_content_desc: "Smart warnings for complex content selections to prevent formatting issues and ensure clean highlighting.",
                 video_demo_title: "Watch a Quick Demo",
                 video_demo_subtitle: "See LaraNote in action and learn how to use it.",
                 how_it_works_title: "Simple and Intuitive",
@@ -354,8 +395,16 @@
                 feature_removing_desc: "قم بإزالة التمييزات بنقرة واحدة، مع الحفاظ على مساحة عملك نظيفة ومنظمة.",
                 feature_url_saving_title: "حفظ لكل رابط",
                 feature_url_saving_desc: "يتم حفظ جميع تمييزاتك وملاحظاتك مقابل عنوان URL للصفحة التي تتصفحها، مع الحفاظ على كل شيء في سياقه.",
-                feature_export_import_title: "تصدير/استيراد",
-                feature_export_import_desc: "قم بتصدير ملاحظاتك كملف JSON للنسخ الاحتياطي أو لاستخدامها في تطبيقات أخرى. يمكنك أيضًا استيراد الملاحظات.",
+                feature_export_import_title: "التصدير/الاستيراد المحسن",
+                feature_export_import_desc: "قم بتصدير ملاحظاتك كملفات JSON للنسخ الاحتياطي أو المشاركة. استورد الملاحظات من الجلسات الأخرى مع خيارات التصفية المتقدمة.",
+                feature_modern_ui_title: "واجهة مستخدم حديثة",
+                feature_modern_ui_desc: "استمتع بواجهة مستخدم أنيقة وحديثة مع رسوم متحركة سلسة، وتحسينات في الطباعة، وتجربة مستخدم محسنة.",
+                feature_arabic_support_title: "دعم الخط العربي",
+                feature_arabic_support_desc: "دعم كامل للنص العربي بخط Playpen Sans Arabic الجميل. مثالي للمحتوى متعدد اللغات واللغات التي تكتب من اليمين إلى اليسار.",
+                feature_toolbar_controls_title: "ضوابط شريط الأدوات الذكية",
+                feature_toolbar_controls_desc: "خصص وقت ظهور شريط الأدوات - فقط عند التحديد بالسحب، مع خيارات لإظهار/إخفاء بناءً على تفضيلاتك.",
+                feature_complex_content_title: "حماية المحتوى المعقد",
+                feature_complex_content_desc: "تحذيرات ذكية لعمليات تحديد المحتوى المعقد لمنع مشاكل التنسيق وضمان تظليل نظيف.",
                 video_demo_title: "شاهد عرضًا سريعًا",
                 video_demo_subtitle: "شاهد LaraNote أثناء العمل وتعرف على كيفية استخدامه.",
                 how_it_works_title: "بسيط وبديهي",
